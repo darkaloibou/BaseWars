@@ -1,3 +1,4 @@
+// Ce dossier charge juste les modules du gamemode rien de plus rien de moin
 local BW = BaseWars
 
 local colorRed 		= Color(255, 0, 0)

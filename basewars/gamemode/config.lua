@@ -20,138 +20,78 @@
 BASEWARS_CHOSEN_LANGUAGE = "FRENCH"
 
 BaseWars.Config = {
-	-- RadarRange: Range of the radar, in source units
-	RadarRange = 4096,
+	RadarRange = 4096,		-- RadarRange: Range of the radar, in source units
+	// AllTalk = true,-- AllTalk: Should chat be global and ignore teams
+	// WeaponDespawn = 60 * 3,-- WeaponDespawn: Seconds until weapons despawn after being dropped, 0 to never despawn
+	SpawnRadius = 0,-- SpawnRadius: Radius of invunerability around spawnpoint entities, 0 to disable
+	//SBoxWeps = false,	-- SBoxWeps: The same as sbox_weapons, if players spawn with hl2 weapons
+	XPMultiplier = 1.0,	-- XPMultiplier: Multiplier on XP earned through various actions- To further customize XP distribution see server/hooks.lua
 
-	-- AllTalk: Should chat be global and ignore teams
-	AllTalk = true,
+	Forums 		= "http://hexahedron.pw/forums/",	-- Forums: Link to your forums, accessed with /forums
+	SteamGroup 	= "http://steamcommunity.com/groups/hexahedronic",	-- SteamGroup: Link to your steam group, accessed with /steam
+	Workshop    = "http://steamcommunity.com/sharedfiles/filedetails/?id=939081277",	-- Workshop: Link to your workshop download, accessed with /workshop
+	Discord 	= "https://discord.gg/stdEJkF",	-- Discord: Link to your discord server, accessed with /discord
 
-	-- WeaponDespawn: Seconds until weapons despawn after being dropped, 0 to never despawn
-	WeaponDespawn = 60 * 3,
+	ScaleVIPPayDay = true,	-- ScaleVIPPayDay: Should VIP ranks get better paydays, scaling with their money?
+	VIPRanks = {"vip",},	-- VIPRanks: Table of ranks which VIP items and ScaleVIPPayDay, etc applies to
 
-	-- SpawnRadius: Radius of invunerability around spawnpoint entities, 0 to disable
-	SpawnRadius = 0,
-
-	-- SBoxWeps: The same as sbox_weapons, if players spawn with hl2 weapons
-	SBoxWeps = false,
-	-- XPMultiplier: Multiplier on XP earned through various actions
-	-- To further customize XP distribution see server/hooks.lua
-	XPMultiplier = 1.0,
-
-	-- Forums: Link to your forums, accessed with /forums
-	Forums 		= "http://hexahedron.pw/forums/",
-	-- SteamGroup: Link to your steam group, accessed with /steam
-	SteamGroup 	= "http://steamcommunity.com/groups/hexahedronic",
-	-- Workshop: Link to your workshop download, accessed with /workshop
-	Workshop    = "http://steamcommunity.com/sharedfiles/filedetails/?id=939081277",
-	-- Discord: Link to your discord server, accessed with /discord
-	Discord 	= "https://discord.gg/stdEJkF",
-
-	-- ScaleVIPPayDay: Should VIP ranks get better paydays, scaling with their money?
-	ScaleVIPPayDay = true,
-	-- VIPRanks: Table of ranks which VIP items and ScaleVIPPayDay, etc applies to
-	VIPRanks = {
-		"vip",
-	},
-
-	-- MaximumPay: Maximum amount players can give eachother, helps stop inflation
-	MaximumPay = 5 * 10^4,
-	-- BountyDelimiter: When receiving a bounty players are limited by this * their current money or the maximum bounty amount, whichever is smallest
-	BountyDelimiter = 2,
-
-	-- PricesSize: Size of font for spawnmenu labels, change this if your language makes it look bad
-	PricesSize = 11,
-	-- IconSize: Size of icons on spawnmenu, change this if the text doesnt fit with your language
-	IconSize = 72,
-
-	-- AllowPropPunt: Should people be allowed to punt props with the gravgun
-	AllowPropPunt = false,
-	-- SpawnBuilding: 0 = Disabled, people can spawn any props at spawn, 1 = Admin only, only admins can spawn props, 2 and above = Nobody, nobody can spawn props at spawn
-	SpawnBuilding = 1,
-
+	MaximumPay = 5 * 10^4,	-- MaximumPay: Maximum amount players can give eachother, helps stop inflation
+	BountyDelimiter = 2,	-- BountyDelimiter: When receiving a bounty players are limited by this * their current money or the maximum bounty amount, whichever is smallest
+	PricesSize = 11,	-- PricesSize: Size of font for spawnmenu labels, change this if your language makes it look bad
+	IconSize = 72,	-- IconSize: Size of icons on spawnmenu, change this if the text doesnt fit with your language
+	AllowPropPunt = false,	-- AllowPropPunt: Should people be allowed to punt props with the gravgun
+	SpawnBuilding = 1,	-- SpawnBuilding: 0 = Disabled, people can spawn any props at spawn, 1 = Admin only, only admins can spawn props, 2 and above = Nobody, nobody can spawn props at spawn
 	Ents = {
 		Electronics = {
-			-- Explode: Should electronics detonate upon destruction
-			Explode		= true,
-			-- WaterProof: Are electronics Water Proof by default
-			WaterProof	= false,
+			Explode		= true,			-- Explode: Should electronics detonate upon destruction
+			WaterProof	= false,			-- WaterProof: Are electronics Water Proof by default
 		},
 		SpawnPoint = {
-			-- Offset: How far above the spawnpoint should you spawn
-			Offset 		= Vector(0, 0, 16),
+			Offset 		= Vector(0, 0, 16),			-- Offset: How far above the spawnpoint should you spawn
 		},
 	},
-
-	Drugs = {
-		DoubleJump = {
-			-- JumpHeight: The velocity vector applied when double jumping
-			JumpHeight 	= Vector(0, 0, 320),
-			-- Duration: Duration of the drug
+	--[[Drugs = {
+		DoubleJump = {			-- JumpHeight: The velocity vector applied when double jumping
+			JumpHeight 	= Vector(0, 0, 320),			-- Duration: Duration of the drug
 			Duration	= 120,
 		},
 		Steroid = {
-			-- Walk: New walk speed when using drug
-			Walk 		= 330,
-			-- Run: New run speed when using drug
-			Run 		= 580,
-			-- Duration: Duration of the drug
-			Duration	= 120,
+			Walk 		= 330,			-- Walk: New walk speed when using drug
+			Run 		= 580,			-- Run: New run speed when using drug
+			Duration	= 120,			-- Duration: Duration of the drug
 		},
 		Regen = {
-			-- Duration: Duration of the drug
-			Duration 	= 30,
+			Duration 	= 30,			-- Duration: Duration of the drug
 		},
 		Adrenaline = {
-			-- Mult: Health multiplier while using drug
-			Mult		= 1.5,
-			-- Duration: Duration of the drug
-			Duration	= 120,
+			Mult		= 1.5,			-- Mult: Health multiplier while using drug
+			Duration	= 120,			-- Duration: Duration of the drug
 		},
 		PainKiller = {
-			-- Mult: Damage multiplier while using drug
-			Mult 		= .675,
-			-- Duration: Duration of the drug
-			Duration	= 80,
+			Mult 		= .675,			-- Mult: Damage multiplier while using drug
+			Duration	= 80,			-- Duration: Duration of the drug
 		},
 		Rage = {
-			-- Mult: Damage multiplier while using drug
-			Mult 		= 1.675,
-			-- Duration: Duration of the drug
-			Duration	= 120,
+			Mult 		= 1.675,			-- Mult: Damage multiplier while using drug
+			Duration	= 120,			-- Duration: Duration of the drug
 		},
 		Shield = {
-
 		},
 		Antidote = {
-
 		},
-		-- CookTime: How long does the drug lab take
-		CookTime	= 60 * 2,
-	},
-
+		CookTime	= 60 * 2,		-- CookTime: How long does the drug lab take
+	},]]--
 	Notifications = {
-		-- LinesAmount: Amount of lines on the notification HUD
-		LinesAmount = 11,
-		-- Width: Width of the notification HUD
-		Width		= 582,
-		-- BackColor: The background color of the notification HUD
-		BackColor	= Color(30, 30, 30, 0),
-		-- OpenTime: Time notification HUD remains open after a notification
-		OpenTime	= 5,
+		LinesAmount = 11,		-- LinesAmount: Amount of lines on the notification HUD
+		Width		= 582,		-- Width: Width of the notification HUD
+		BackColor	= Color(30, 30, 30, 0),		-- BackColor: The background color of the notification HUD
+		OpenTime	= 5,		-- OpenTime: Time notification HUD remains open after a notification
 	},
-
 	Raid = {
-		-- Time: Time a raid lasts for
-		Time 			= 60 * 5,
-		-- CoolDownTime: Time after a raid the person being raided is protected for
-		CoolDownTime	= 0,
-		-- NeededPrinters: Amount of valid raidables needed to be raided
-		NeededPrinters	= 0,
-		-- CertainInflictors: Only allow certain inflictors to hurt props, enable this if you liked the old style blowtorch system
-		CertainInflictors = false,
-		-- Inflictors: If you have CertainInflictors enabled, these are the classes which can damage props
-		-- NOTE: bw_blowtorch can ALWAYS damage props, no matter the setting
-		-- NOTE: Inverted table! [class] = true
+		Time 			= 60 * 5,		-- Time: Time a raid lasts for
+		CoolDownTime	= 0,		-- CoolDownTime: Time after a raid the person being raided is protected for
+		NeededPrinters	= 0,		-- NeededPrinters: Amount of valid raidables needed to be raided
+		CertainInflictors = false,		-- CertainInflictors: Only allow certain inflictors to hurt props, enable this if you liked the old style blowtorch system		-- Inflictors: If you have CertainInflictors enabled, these are the classes which can damage props		-- NOTE: bw_blowtorch can ALWAYS damage props, no matter the setting		-- NOTE: Inverted table! [class] = true
 		Inflictors = {
 			["bw_blowtorch"] = true,
 			["bw_explosive_c4"] = true,
@@ -160,54 +100,34 @@ BaseWars.Config = {
 			["bw_explosive_nuke"] = true,
 		},
 	},
-
 	AFK  = {
-		-- Time: Time in seconds before AFK HUD shows (DOES NOT KICK)
-		Time 	= 30,
+		Time 	= 30,		-- Time: Time in seconds before AFK HUD shows (DOES NOT KICK)
 	},
-
 	HUD = {
-		-- EntFont: Title font for ent HUD overlay
-		EntFont = "TargetID",
-		-- EntFont2: Subtitle font for ent HUD overlay
-		EntFont2 = "BudgetLabel",
-		-- EntW: Width of ent HUD overlay
-		EntW	= 175,
-		-- EntH: Height of ent HUD overlay
-		EntH	= 25,
+		EntFont = "TargetID",		-- EntFont: Title font for ent HUD overlay
+		EntFont2 = "BudgetLabel",		-- EntFont2: Subtitle font for ent HUD overlay
+		EntW	= 175,		-- EntW: Width of ent HUD overlay
+		EntH	= 25,		-- EntH: Height of ent HUD overlay
 	},
-
 	Rules = {
-		-- IsHTML: Is the next variable HTML, if not it is a URI to a valid HTML file
-		IsHTML 	= false,
-		-- HTML: HTML string or valid URI
-		HTML	= "https://diamond-boutique.mtxserv.com/azurium/news/rules",
+		IsHTML 	= false,		-- IsHTML: Is the next variable HTML, if not it is a URI to a valid HTML file
+		HTML	= "https://diamond-boutique.mtxserv.com/azurium/news/rules",		-- HTML: HTML string or valid URI
 	},
-
 	Adverts = {
-		-- Time: Time between adverts by the system
-		Time = 120,
+		Time = 120,		-- Time: Time between adverts by the system
 	},
-
-	-- SpawnWeps: Weapons that everyone gets when they spawn
-	SpawnWeps = {
+	SpawnWeps = {	-- SpawnWeps: Weapons that everyone gets when they spawn
 		"weapon_physcannon",
 		"hands",
 	},
-
-	-- WeaponDropBlacklist: Weapons nobody can drop using /dropweapon
-	-- NOTE: Inverted table! [class] = true
-	WeaponDropBlacklist = {
+	--[[WeaponDropBlacklist = {	-- WeaponDropBlacklist: Weapons nobody can drop using /dropweapon	-- NOTE: Inverted table! [class] = true
 		["weapon_physgun"] = true,
 		["weapon_physcannon"] = true,
 		["hands"] = true,
 		["gmod_tool"] = true,
 		["gmod_camera"] = true,
-	},
-
-	-- PhysgunBlockClasses: Entity classes that you cant physgun
-	-- NOTE: Inverted table! [class] = true
-	PhysgunBlockClasses = {
+	},]]--
+	PhysgunBlockClasses = {	-- PhysgunBlockClasses: Entity classes that you cant physgun	-- NOTE: Inverted table! [class] = true
 		["bw_spawnpoint"] = true,
 		["bw_explosive_c4"] = true,
 		["bw_explosive_bigbomb"] = true,
@@ -218,41 +138,27 @@ BaseWars.Config = {
 		["bw_explosive_mine_shock"] = true,
 		["bw_explosive_nuke"] = true,
 	},
-
-	-- BlockedTools: Tools which only admins can use
-	-- NOTE: Inverted table! [model] = true
-	BlockedTools = {
+	BlockedTools = {	-- BlockedTools: Tools which only admins can use	-- NOTE: Inverted table! [model] = true
 		["dynamite"] = true,
 		["duplicator"] = true,
 		["paint"] = true,
 	},
-
-	-- ModelBlacklist: Models which nobody can spawn
-	-- NOTE: Inverted table! [model] = true
-	ModelBlacklist = {
+	ModelBlacklist = {	-- ModelBlacklist: Models which nobody can spawn	-- NOTE: Inverted table! [model] = true
 		-- Models which cause crashes
 		["models/props_phx/wheels/metal_wheel1.mdl"] = true,
 		["models/props_phx/wheels/metal_wheel2.mdl"] = true,
 		["models/props_phx/misc/potato_launcher_chamber.mdl"] = true,
 		["models/props_c17/oildrum001_explosive.mdl"] = true,
 	},
-
-	NPC = {
-		-- FadeOut: Fade distance for NPC title
-		FadeOut = 400,
-	},
-
+	--[[NPC = {
+		FadeOut = 400,		-- FadeOut: Fade distance for NPC title
+	},]]--
 	AntiRDM = {
-		-- HurtTime: Time after getting attacked in which it's not 'rdm' to kill someone
-		HurtTime 		= 80,
-		-- RDMSecondsAdd: Seconds added to respawn timer per random kill
-		RDMSecondsAdd 	= 0,
-		-- KarmaSecondPer: Seconds added to respawn timer per X negative karma, whats X? fuck if i know
-		KarmaSecondPer 	= 6,
-		-- KarmaLoss: Karma lost per random kill
-		KarmaLoss 		= -2,
-		-- KarmaGlowLevel: Level as which players glow green or red due to karma, set to > 100 to disable
-		KarmaGlowLevel 	= 100,
+		HurtTime 		= 80,		-- HurtTime: Time after getting attacked in which it's not 'rdm' to kill someone
+		RDMSecondsAdd 	= 0,		-- RDMSecondsAdd: Seconds added to respawn timer per random kill
+		KarmaSecondPer 	= 6,		-- KarmaSecondPer: Seconds added to respawn timer per X negative karma, whats X? fuck if i know
+		KarmaLoss 		= -2,		-- KarmaLoss: Karma lost per random kill
+		KarmaGlowLevel 	= 100,		-- KarmaGlowLevel: Level as which players glow green or red due to karma, set to > 100 to disable
 	},
 
 	-- PayDayBase: Base payday rate
