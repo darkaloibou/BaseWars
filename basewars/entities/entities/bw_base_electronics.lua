@@ -8,8 +8,8 @@ ENT.Model = "models/props_c17/metalPot002a.mdl"
 ENT.Skin = 0
 
 ENT.IsElectronic = true
-ENT.PowerRequired = 5
-ENT.PowerCapacity = 1000
+ENT.PowerRequired = -1
+ENT.PowerCapacity = -1
 
 function ENT:DrainPower(val)
 
@@ -30,7 +30,6 @@ end
 if SERVER then
 
 	function ENT:Think()
-
 		self:ThinkFuncBypass()
 
 		if self:IsPowered() and self:BadlyDamaged() and math.random(0, 11) == 0 then

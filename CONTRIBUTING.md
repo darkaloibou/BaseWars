@@ -1,22 +1,28 @@
-## How to contribute
+#About contributing
 
-If you're a member of the Hexahedronic organization, you have write access already.
-Otherwise, send us a pull request. A developer will review it and decide whether to pull it or not.
+If you see this file, you should have full push permissions on this repo. If you don't, contact an administrator.
+Feel free to clone the repo and make changes. Make sure you ask around before you commit to make sure
+your code works as intended. Getting it checked by someone else never hurts.
 
-## Guidelines
+We would also like to ask you to not share anything of this gamemode with someone that doesn't have atleast read access to this repo.
 
-If you want your pull request to be accepted:
+Everyone that has ever contributed in any way will be put on a list, thanking them for their support. (TODO!)
 
-- Please try to stick to our code style. Code that is too different will not be merged until it is fixed.
 
-- Please avoid using spaces for indentation.
+If you have any concerns about anything, feel free to contact [support](mailto:support@hexahedron.pw), [Q2F2](mailto:q2f2@hexahedron.pw) or [Ling](mailto:ling@hexahedron.pw).
+You can alternatively contact us via [steam!](http://steamcommunity.com/groups/hexahedronic).
 
-- Please follow our directory structure.
+** Any help we can get is more than welcome **
 
-Members of the organization are also expected to follow these guidelines.
 
-## What if my pull request is denied?
 
-Does your code style bear any resemblance to ours? If not, please fix that.
-
-Troll pullreqs are obviously denied.
+*As a condition of providing a Contribution, you agree that:* 
+- *You grant Hexahedronic a non-exclusive, irrevocable, royalty-free, worldwide license
+to make, use, sell, reproduce, modify, distribute (directly and indirectly),
+and publicly display and perform the Contribution, and any derivative works
+that Hexahedronic may make from the Contribution, under any intellectual property you
+own or have the right to license.* 
+- *You warrant and represent that the Contribution is your original creation,
+that you have the authority to grant this license to Hexahedronic, and that this
+license does not require the permission of any third party.  Otherwise, you
+provide your Contribution "as is" without warranties.*

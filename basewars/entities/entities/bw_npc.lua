@@ -20,26 +20,19 @@ if CLIENT then return end
 ENT.UsedTime 	= CurTime()
 
 function ENT:OnUse(ply, caller)
-
 	net.Start("BaseWars.NPCs.Menu")
 		net.WriteEntity(self)
 	net.Send(ply)
-
 end
 
 function ENT:AcceptInput(Name, ply, caller)
-
 	if Name == "Use" and ply:IsPlayer() and CurTime() - 1 > self.UsedTime then
-
 		self:OnUse(ply, caller)
 		self.UsedTime = CurTime()
-
 	return end
-
 end
 
 function ENT:Initialize()
-
 	self:SetModel(self.Model)
 
 	self:PhysicsInit(SOLID_BBOX)
@@ -51,12 +44,10 @@ function ENT:Initialize()
 
 	self:Activate()
 
-	timer.Simple(0, function() self:FixPosition() end)
-
+	timer.Simple(0, function() if IsValid(self) then self:FixPosition() end end)
 end
 
 function ENT:FixPosition()
-
 	self:SetPos(self:GetPos() + self.Offset2)
 
 	self:DropToFloor()
@@ -73,18 +64,15 @@ function ENT:FixPosition()
 	if BaseWars.Ents:Valid(Phys) then Phys:Sleep() end
 
 	self:Activate()
-
 end
 
 function ENT:Think()
-
 	if not self.IDLESequence then return end
 
-    self:SetSequence(self.IDLESequence)
+	self:SetSequence(self.IDLESequence)
 
 	local Time = CurTime() + self:SequenceDuration(self.IDLESequence)
 	self:NextThink(Time)
 
 	return true
-
 end

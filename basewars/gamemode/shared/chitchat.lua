@@ -1,399 +1,368 @@
---[[
+chatexp = {}
+chatexp.NetTag = "chatexp" -- Do not change this unless you experience some very strange issues
+chatexp.AbuseMode = "Kick" -- Kick or EarRape, this is what happens to people who try and epxloit the system
 
-	ChitChat
-	script 			v 2
-	implementation  v 1
-	by Ghosty
+-- This is basicly chitchat3
+-- Max message length is now 0x80000000 (10^31)
+-- Filters are fixed, better mode handling.
 
-	CURRENT Features:
-		Chat modes
-		Unlimited* chat chars
+local color_red = Color(225, 0, 0, 255)
+local color_greentext = Color(0, 240, 0, 255)
+local color_green = Color(0, 200, 0, 255)
+local color_hint = Color(240, 220, 180, 255)
 
-	PLANNED Features:
-		Chat filtering
-		Private messaging
-		Lua code executor
-		Tag system
-		Themes
-		Extendable tab system
-
-	*1023 chars really, but who needs that many?
-
-]]--
-
-local Tag = "chitchat_msg"
-local NET_SAFE_LIMIT = 65530 -- Playin' it safe
-local GM = {}
-
-chitchat = chitchat or {}
-
-CHCH_SCRPVER = 2
-CHCH_IMPLVER = 1
-
-chitchat.Versions = {
-	script 			= CHCH_SCRPVER,
-	implementation 	= CHCH_IMPLVER,
-}
-
-local function GetIPR(ply)
-	local ip = ply:IPAddress()
-	return ip:gsub("(%d+%.%d+%.%d+)%..+","%1")
+function net.HasOverflowed()
+    return (net.BytesWritten() or 0) >= 65536
 end
 
-chitchat.MessageModes = {
-	{ -- Global Chat
-		PrintName 	= "GLOBAL",
-		HideTag 	= true,
-		Filter = function( s, r )
-			return true	
-		end,
-	},
-	{ -- Team Chat
-		PrintName 	= "TEAM",
-		Color		= Color(127, 190, 0),
-		Filter		= function(s,r)
-			return s:Team() == r:Team()
-		end,
-	},
-	{ -- Local Chat (everyone with the same IP range as you)
-		PrintName 	= "LOCAL",
-		Color		= Color(102, 204, 255),
-		Filter		= function(s,r)
-			return GetIPR(s) == GetIPR(r)
-		end,
-	},
-	{ -- Announcement
-		PrintName 	= "ANNOUNCEMENT",
-		Color 		= Color(255, 51, 0),
-		ChatColor	= Color(255, 152, 152),
-		Filter = function( s, r )
-			return true	
-		end,
-	},
-	{ -- Whisper (only people in a 72 unit radius can hear you)
-		PrintName 	= "WHISPER",
-		Color 		= Color(142, 142, 142),
-		ChatColor	= Color(245, 245, 245),
-		Filter 		= function (s,r)
-			local pos1,pos2 = s:GetPos(),r:GetPos()
-			return pos1:Distance(pos2) <= 72
-		end,
-	},
-	{ -- Admins
-		PrintName 	= "@ADMIN",
-		Color 		= Color(102, 204, 255),
-		Filter 		= function (s,r)
-			return r:IsAdmin()
-		end,
-	},
-	{
-	 -- OOC
-		PrintName 	= "OOC",
-		Filter = function( s, r )
-			return true	
-		end,
-	},
-	{
-	 -- LOOC, yell radius
-		PrintName 	= "LOOC",
-		ShowRank    = false,
-		Color 			= Color(142, 142, 142),
-		ChatColor 	= Color(232, 192, 192),
-		Filter = function( s, r )
-			return s:GetPos():DistToSqr(r:GetPos()) < 112500
-		end,
-	},
-}
-
---[[
-["donators"] = {
-	["STEAM_0:1:66541847"] = "Mitzuya",
-},
-["moderators"] = {
-	["STEAM_0:1:11838714"] = "TaillyLaundis",
-	["STEAM_0:1:61234140"] = "creb",
-	["STEAM_0:1:54664121"] = "TyroneMufasa",
-},
-["managers"] = {
-	["STEAM_0:0:54576316"] = "AlanSugartits",
-},
-["owners"] = {
-	["STEAM_0:1:74836666"] = "Trixter",
-	["STEAM_0:1:62445445"] = "Q2F2",
-	["STEAM_0:0:133411986"] = "MorganDrunkmanIWantedMilitia",
-},
-["developers"] = {
-	["STEAM_0:0:80997988"] = "oplexz",
-	["STEAM_0:1:32476157"] = "Tenrys",
-	["STEAM_0:0:80669850"] = "user4992",
-	["STEAM_0:0:155546951"] = "notoplex",
-	["STEAM_0:0:42138604"] = "Liquid",
-	["STEAM_0:0:62588856"] = "Ghosty",
-	["STEAM_0:1:29543208"] = "ToastyEngineer",
-},
-]]
-
-chitchat.Devs = {
+chatexp.Devs = {
 	--Owners
-	["STEAM_0:1:74836666"] = "Trixter",
-	["STEAM_0:1:62445445"] = "Q2F2",
-	["STEAM_0:0:133411986"] = "CakeShaked", --Trixter alt acc
-	
+	--["STEAM_0:1:74836666"] = "Trixter",
+	--["STEAM_0:1:62445445"] = "Q2F2",
+	--["STEAM_0:0:133411986"] = "CakeShaked", --Trixter alt acc
+      ["STEAM_0:0:209904628"] = "dark aloibou",
 	--Devs
-	["STEAM_0:0:80997988"] = "oplexz",
-	["STEAM_0:1:32476157"] = "Tenrys",
-	["STEAM_0:0:80669850"] = "user4992",
-	["STEAM_0:0:155546951"] = "notoplex",
-	["STEAM_0:0:42138604"] = "Liquid",
-	["STEAM_0:0:62588856"] = "Ghosty",
-	["STEAM_0:1:29543208"] = "ToastyEngineer",
+	--["STEAM_0:0:80997988"] = "oplexz",
+	--["STEAM_0:1:32476157"] = "Tenrys",
+	--["STEAM_0:0:80669850"] = "user4992",
+	--["STEAM_0:0:155546951"] = "notoplex",
+	--["STEAM_0:0:42138604"] = "Liquid",
+	--["STEAM_0:0:62588856"] = "Ghosty",
+	--["STEAM_0:1:29543208"] = "ToastyEngineer",
 }
 
-if SERVER then
-
-	AddCSLuaFile()
-
-	util.AddNetworkString(Tag)
-
-	function GM:ChangeChatMode(ply,msg,msgmode)
-		if msg:StartWith("@") then
-			return 5,msg:gsub("^@","")
-		end
-		if msg:StartWith("//") then
-			return 6,msg:gsub("^//%s?","")
-		end
-
-		if msg:StartWith("/ooc") then
-			return 6,msg:gsub("^/ooc%s?","")
-		end
-		
-		if msg:StartWith(".//") then
-			return 7,msg:gsub("^%.// ?%s?","")
-		end
-	end
-
-	net.Receive(Tag,function(len,ply)
-		local msglen	= net.ReadUInt(10)
-		local msg 	 	= net.ReadData(msglen)
-		local msgmode 	= net.ReadUInt(6)
-
-		local unmsg		= util.Decompress(msg)
-		if not unmsg then
-			Msg("[CHCH] ") print(ply," message failed to decompress!?")
-			return
-		end
-
-		(epoe and epoe.RealMsgC or MsgC)(Color(255, 255, 0, 255), ply, color_white, ": ", unmsg, "\n")
-
-		-- incoming terrible one-liners
-
-		local msgrep	= gamemode.Call("PlayerSay",ply,unmsg,msgmode) -- you are an idiot if you use "== true" for unspecific things
-		if msgrep == "" or msgrep == false then return end
-		if msgrep then unmsg = msgrep end
-		local newmode,m = gamemode.Call("ChangeChatMode",ply,unmsg,msgmode)
-		if newmode == false then return end
-		if newmode then msgmode = newmode end
-		if m then unmsg = m end
-
-		local msgmodefilt = chitchat.MessageModes[msgmode]
-		if not msgmodefilt then return end -- silently fail
-		msgmodefilt = msgmodefilt.Filter
-
-		local plys = {}
-
-		if msgmodefilt then
-			for _,pl in next,player.GetHumans() do
-				if msgmodefilt(ply,pl) then
-					if table.HasValue(plys,pl) then continue end
-					plys[#plys + 1] = pl
-				end
-			end
-		end
-
-		msg = util.Compress(unmsg)
-
-		if not msg then
-			Msg("[CHCH] ") print(ply," MESSAGE FAILED TO COMPRESS!? WTF???")
-			return
-		end
-
-		msglen = #msg
-
-		net.Start(Tag)
-			net.WriteEntity(ply)
-			net.WriteUInt(msglen,10)
-			net.WriteData(msg,msglen)
-			net.WriteUInt(msgmode,6)
-			if net.BytesWritten() > NET_SAFE_LIMIT then
-				Msg("[CHCH] ") print(ply," net message len over safe limits, bail")
-				return
-			end
-		net.Send(plys)
-
-	end)
-
-else
-
-	local timestm = CreateClientConVar("chitchat_timestamp","1")
-	local shwsecs = CreateClientConVar("chitchat_timestamp_showseconds","0")
-	local hours24 = CreateClientConVar("chitchat_timestamp_24hours","1")
-
-	local function FormatZeroes(n)
-		return n > 9 and "" .. n or "0" .. n
-	end
-
-	local function TimeStamp24Hours()
-		local datetable = os.date("*t")
-		local h,m,s = datetable.hour,datetable.min,datetable.sec
-		return FormatZeroes(h) .. ":" .. FormatZeroes(m) .. (shwsecs:GetBool() and (":" .. FormatZeroes(m)) or "")
-	end
-
-	local function TimeStamp12Hours()
-		local datetable = os.date("*t")
-		local h,m,s = datetable.hour,datetable.min,datetable.sec
-		local pm
-		if h > 12 then
-			h = h - 12
-			pm = true
-		end
-		return FormatZeroes(h) .. ":" .. FormatZeroes(m) .. (shwsecs:GetBool() and (":" .. FormatZeroes(s)) or "") .. " " .. (pm and "PM" or "AM")
-	end
-
-	local purp = Color(102, 204, 255)
-
-	local function TimeStamp()
-		local ts = hours24:GetBool() and TimeStamp24Hours() or TimeStamp12Hours()
-		local tbl = {
-			purp,
-			ts,
-			" - ",
-		}
-		return tbl
-	end
-
-	local function NiceFormat(str)
-
-		local Nice = str:lower()
-		Nice = str:gsub("^%l", string.upper)
-
-		return Nice
-
-	end
-
+local tagParse
+do
 	local white,gray = Color(255,255,255),Color(128,128,128)
 	local red, blu, green = Color(225,0,0), Color(80, 200, 255), Color(133,208,142)
+	local orange = Color(255,160,30)
 
-	local showranks = CreateConVar("cl_chitchat_showranks", "1", { FCVAR_ARCHIVE }, "Should we show player ranks when they talk? ex. \"[Owners] Q2F2: imgay\"")
+	local showranks = CreateConVar("bw_chat_showranks", "1", { FCVAR_ARCHIVE }, "Should we show player ranks when they talk? ex. \"[Owners] Q2F2: imgay\"")
 
-	function GM:OnPlayerChat(ply,msg,mode,dead)
+	local function NiceFormat(str)
+		local nice = str:lower()
+		nice = str:gsub("^%l", string.upper)
 
-		local tbl = timestm:GetBool() and TimeStamp() or {}
-		if mode == true  then mode = 2 end
-		if mode == false then mode = 1 end
+		return nice
+	end
 
-		local msgmode = chitchat.MessageModes[mode]
+	local ranks_tags = {
+		["some_rank"] = { -- Group name on ULX, make sure to spell it right
+			color = red,
+			title = "Some Rank",
+		},
+		["some_other_rank"] = {
+			color = blu,
+			title = "Some Other Rank",
+		},
+	}
 
-		tbl[#tbl + 1] = white
-		if dead then
-			tbl[#tbl + 1] = red
-			tbl[#tbl + 1] = "*DEAD* "
-		end
-
+	-- ported from chitchat2
+	function tagParse(tbl, ply)
 		if IsValid(ply) and ply:IsPlayer() then
-			if chitchat.Devs[ply:SteamID()] then
-			
+			local ugroup = ply:GetUserGroup()
+			if chatexp.Devs[ply:SteamID()] then
 				tbl[#tbl + 1] = gray
 				tbl[#tbl + 1] = "["
-				tbl[#tbl + 1] = green
+				tbl[#tbl + 1] = orange
 				tbl[#tbl + 1] = "GM-Dev"
 				tbl[#tbl + 1] = gray
 				tbl[#tbl + 1] = "] "
-			
+			elseif ranks_tags[ugroup] and showranks:GetBool() then
+				tbl[#tbl + 1] = gray
+				tbl[#tbl + 1] = "["
+				tbl[#tbl + 1] = ranks_tags[ugroup].color
+				tbl[#tbl + 1] = ranks_tags[ugroup].title
+				tbl[#tbl + 1] = gray
+				tbl[#tbl + 1] = "] "
 			elseif (ply:IsAdmin() or (ply.IsMod and ply:IsMod())) and showranks:GetBool() then
-
 				tbl[#tbl + 1] = gray
 				tbl[#tbl + 1] = "["
 				tbl[#tbl + 1] = blu
-				tbl[#tbl + 1] = NiceFormat(ply:GetUserGroup())
+				tbl[#tbl + 1] = NiceFormat(ugroup)
 				tbl[#tbl + 1] = gray
 				tbl[#tbl + 1] = "] "
-
 			end
 
-			if ply:GetUserGroup() == "donators" then
-
+			if table.HasValue(BaseWars.Config.VIPRanks, ugroup) then
 				tbl[#tbl + 1] = gray
 				tbl[#tbl + 1] = "["
 				tbl[#tbl + 1] = green
 				tbl[#tbl + 1] = "$"
 				tbl[#tbl + 1] = gray
 				tbl[#tbl + 1] = "] "
-
-			end
-
-			tbl[#tbl + 1] = team.GetColor(ply:Team())
-			tbl[#tbl + 1] = ply:Nick()
-		else
-			tbl[#tbl + 1] = white
-			tbl[#tbl + 1] = "Console"
-		end
-
-		local pname,tc,cc = "",white,white
-		if msgmode then
-			if not msgmode.HideTag then
-				pname,tc,cc = msgmode.PrintName, msgmode.Color, msgmode.ChatColor
-				tbl[#tbl + 1] = tc
-				tbl[#tbl + 1] = " (" .. pname .. ")"
 			end
 		end
+	end
+end
 
-		tbl[#tbl + 1] = white
-		tbl[#tbl + 1] = ": "
-		tbl[#tbl + 1] = cc
-		if msg:StartWith(">") and #msg > 1 then
-			tbl[#tbl + 1] = Color(0,240,0)
-		elseif msg:match("^[\"'].+[\"']") then
-			tbl[#tbl + 1] = Color(255,200,200)
-		end
-		tbl[#tbl + 1] = msg
+chatexp.Modes = {
+	{
+			Name = "Default",
+			Filter = function(send, ply)
+				return true
+			end,
+			Handle = function(tbl, ply, msg, dead, mode_data)
+				if dead then
+					tbl[#tbl + 1] = color_red
+					tbl[#tbl + 1] = "*DEAD* "
+				end
 
-		chat.AddText(unpack(tbl))
+				tagParse(tbl, ply)
 
-		return true
+				tbl[#tbl + 1] = ply -- ChatHUD parses this automaticly
+				tbl[#tbl + 1] = color_white
+				tbl[#tbl + 1] = ": "
+				tbl[#tbl + 1] = color_white
 
+				if msg:StartWith(">") and #msg > 1 then
+					tbl[#tbl + 1] = color_greentext
+				end
+
+				tbl[#tbl + 1] = msg
+			end,
+	},
+	{
+			Name = "Team",
+			Filter = function(send, ply)
+				return send:Team() == ply:Team()
+			end,
+			Handle = function(tbl, ply, msg, dead, mode_data)
+				if dead then
+					tbl[#tbl + 1] = color_red
+					tbl[#tbl + 1] = "*DEAD* "
+				end
+
+				tbl[#tbl + 1] = color_green
+				tbl[#tbl + 1] = "(TEAM) "
+
+				tagParse(tbl, ply)
+
+				tbl[#tbl + 1] = ply -- ChatHUD parses this automaticly
+				tbl[#tbl + 1] = color_white
+				tbl[#tbl + 1] = ": "
+				tbl[#tbl + 1] = color_white
+
+				if msg:StartWith(">") and #msg > 1 then
+					tbl[#tbl + 1] = color_greentext
+				end
+
+				tbl[#tbl + 1] = msg
+			end,
+	},
+	{
+			Name = "DM",
+			-- No Filter.
+			Handle = function(tbl, ply, msg, dead, mode_data)
+				if ply == LocalPlayer() then
+					tbl[#tbl + 1] = color_hint
+					tbl[#tbl + 1] = "You"
+					tbl[#tbl + 1] = color_white
+					tbl[#tbl + 1] = " -> "
+					tbl[#tbl + 1] = Player(mode_data)
+
+					hook.Run("SendDM", Player(mode_data), msg)
+				else
+					tbl[#tbl + 1] = ply
+					tbl[#tbl + 1] = color_white
+					tbl[#tbl + 1] = " -> "
+					tbl[#tbl + 1] = color_hint
+					tbl[#tbl + 1] = "You"
+
+					hook.Run("ReceiveDM", ply, msg)
+				end
+
+				tbl[#tbl + 1] = color_white
+				tbl[#tbl + 1] = ": "
+
+				tbl[#tbl + 1] = color_white
+				tbl[#tbl + 1] = msg
+			end,
+	},
+}
+
+for k, v in next, chatexp.Modes do
+	_G["CHATMODE_"..v.Name:upper()] = k
+end
+
+if CLIENT then
+
+	local showTS = CreateConVar("bw_chat_timestamp_show", "0", FCVAR_ARCHIVE, "Show timestamps in chat")
+	local hour24 = CreateConVar("bw_chat_timestamp_24h", "1", FCVAR_ARCHIVE, "Display timestamps in a 24-hour format")
+	local tsSec = CreateConVar("bw_chat_timestamp_seconds", "0", FCVAR_ARCHIVE, "Display timestamps with seconds")
+
+	local dgray = Color(150, 150, 150)
+
+	local function pad(z)
+		return z >= 10 and tostring(z) or "0" .. z
 	end
 
-	net.Receive(Tag,function()
+	local zw = "\xE2\x80\x8B"
+	local function MakeTimeStamp(t, h24, seconds)
+		t[#t + 1] = dgray
+		local d = os.date("*t")
+		if h24 then
+			t[#t + 1] = pad(d.hour) .. ":" .. zw .. pad(d.min) .. zw .. (seconds and ":" .. zw .. pad(d.sec) or "")
+		else
+			local h, pm = d.hour
+			if h > 11 then
+				pm = true
+				h = h > 12 and h - 12 or h
+			elseif h == 0 then
+				h = 12
+			end
+			t[#t + 1] = pad(h) .. ":" .. zw .. pad(d.min) .. zw .. (seconds and ":" .. zw .. pad(d.sec) .. zw or "") .. (pm and " PM" or " AM")
+		end
+		t[#t + 1] = " - "
+	end
+
+	function chatexp.Say(msg, mode, mode_data)
+		local cdata = util.Compress(msg)
+
+		net.Start(chatexp.NetTag)
+			net.WriteUInt(#cdata, 16)
+			net.WriteData(cdata, #cdata)
+
+			net.WriteUInt(mode, 8)
+			net.WriteUInt(mode_data or 0, 16)
+		net.SendToServer()
+	end
+
+	function chatexp.SayChannel(msg, channel)
+		chatexp.Say(msg, CHATMODE_CHANNEL, channel)
+	end
+
+	function chatexp.DirectMessage(msg, ply)
+		chatexp.Say(msg, CHATMODE_DM, ply:UserID())
+	end
+
+	net.Receive(chatexp.NetTag, function()
 		local ply 	= net.ReadEntity()
-		local len 	= net.ReadUInt(10)
+
+		local len 	= net.ReadUInt(16)
 		local data 	= net.ReadData(len)
-		local mode 	= net.ReadUInt(6)
+
+		local mode 	= net.ReadUInt(8)
+		local mode_data = net.ReadUInt(16)
 
 		data = util.Decompress(data)
 
 		if not data then
-			print("CHCH : Failed to decompress message.")
+			Msg"CEXP" print"Failed to decompress message."
 			return
 		end
 
-		local dead = (IsValid(ply) and ply:IsPlayer()) and (not ply:Alive()) or false
-
-		gamemode.Call("OnPlayerChat",ply,data,mode,dead)
+		local dead = ply:IsValid() and ply:IsPlayer() and not ply:Alive()
+		gamemode.Call("OnPlayerChat", ply, data, mode, dead, mode_data)
 	end)
 
-	function chitchat.Say(msg,msgmode)
-		msgmode = tonumber(msgmode) or 1
-		msg = util.Compress(msg)
-		net.Start(Tag)
-			net.WriteUInt(#msg,10)
-			net.WriteData(msg,#msg)
-			net.WriteUInt(msgmode,6)
-		net.SendToServer()
+	local gm = GM or GAMEMODE
+	function gm:OnPlayerChat(ply, msg, mode, dead, mode_data)
+		chatexp.LastPlayer = ply
+
+		if mode == true  then mode = CHATMODE_TEAM end
+		if mode == false then mode = CHATMODE_DEFAULT end
+
+		local msgmode = chatexp.Modes[mode]
+		local tbl = {}
+
+		if showTS:GetBool() then
+			MakeTimeStamp(tbl, hour24:GetBool(), tsSec:GetBool())
+		end
+
+		local ret
+		if msgmode.Handle then
+			ret = msgmode.Handle(tbl, ply, msg, dead, mode_data)
+		else -- Some modes may just be a filter
+			ret = chatexp.Modes[CHATMODE_DEFAULT].Handle(tbl, ply, msg, dead, mode_data)
+		end
+
+		if ret == false then return true end
+
+		chat.AddText(unpack(tbl))
+		return true
 	end
 
-end
+else -- CLIENT
 
-timer.Simple(0,function()
-	local gm = GAMEMODE
-	table.Merge(gm,GM)
-end)
+	util.AddNetworkString(chatexp.NetTag)
+
+	function chatexp.FuckOff(ply)
+		local m = chatexp.AbuseMode
+
+		if m == "EarRape" then
+			ply:SendLua[[local d=vgui.Create'DHTML'd:OpenURL'https://www.youtube.com/watch?v=WevymH75pW8'chat.AddText'dont fuck with chat']]
+		elseif m == "Kick" then
+			ply:Kick("Please refrain from touching *bzzzt*")
+		end
+	end
+
+	function chatexp.SayAs(ply, data, mode, mode_data)
+		if #data > 1024 then
+			chatexp.FuckOff(ply)
+			return
+		end
+
+		local ret = hook.Run("PlayerSay", ply, data, mode)
+
+		if ret == "" or ret == false then return end
+		if isstring(ret) then data = ret end
+
+		(epoe and epoe.RealMsgC or MsgC)(Color(255, 255, 0, 255), ply, color_white, ": ", data, "\n")
+
+		local msgmode = chatexp.Modes[mode]
+
+		local filter = {}
+		if mode == CHATMODE_DM then
+			filter = {Player(mode_data)}
+		elseif msgmode.Filter then
+			for k, v in next,player.GetHumans() do
+				if msgmode.Filter(ply, v) ~= false then filter[#filter+1] = v end
+			end
+		else
+			filter = player.GetHumans()
+		end
+
+		if #filter == 0 then return end
+		if not table.HasValue(filter, ply) then filter[#filter+1] = ply end
+
+		local cdata = util.Compress(data)
+		if not cdata then
+			Msg"[CEXP] " print"Failed to re-compress message."
+			return
+		end
+
+		net.Start(chatexp.NetTag)
+			net.WriteEntity(ply)
+
+			net.WriteUInt(#cdata, 16)
+			net.WriteData(cdata, #cdata)
+
+			net.WriteUInt(mode, 8)
+			net.WriteUInt(mode_data, 16)
+
+			if net.HasOverflowed() then
+				Msg"[CEXP] " print("Net overflow -> '" .. data .. "'")
+				return
+			end
+		net.Send(filter)
+	end
+
+	net.Receive(chatexp.NetTag, function(_, ply)
+		local len		= net.ReadUInt(16)
+		local cdata	= net.ReadData(len)
+
+		local mode	= net.ReadUInt(8)
+		local mode_data = net.ReadUInt(16)
+
+		local data = util.Decompress(cdata)
+
+		if not data then
+			Msg"[CEXP] " print"Failed to decompress message."
+			return
+		end
+
+		chatexp.SayAs(ply, data, mode, mode_data)
+	end)
+
+end -- SERVER

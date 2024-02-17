@@ -30,13 +30,13 @@ function ENT:Think()
 
 	if CurTime() > self.Curtime + 4 then
 
-		if not self.Owner then return end
+		if not IsValid(self.Owner) then self:Remove() return end
 
 		self:SpewGas()
 
-		for k, v in next, ents.FindInSphere(self:GetPos(), 220) do
+		for k, v in next, ents.FindInSphere(self:GetPos(), 170) do
 
-			if not v:IsPlayer() then continue end
+			if not v:IsPlayer() or not v:Alive() then continue end
 
 			local d = DamageInfo()
 				d:SetDamage(5)
@@ -44,8 +44,8 @@ function ENT:Think()
 				d:SetAttacker(self)
 			v:TakeDamageInfo(d)
 
-			v:ApplyDrug("Poison", 8, self.Owner, self.Owner)
-			v:ScreenFade(SCREENFADE.IN, Color(20, 200, 20, 100), 0.1, 0)
+			v:ApplyDrug("Poison", 30, self.Owner, self.Owner)
+			v:ScreenFade(SCREENFADE.IN, Color(20, 200, 20, 100), 0.2, 0)
 
 		end
 

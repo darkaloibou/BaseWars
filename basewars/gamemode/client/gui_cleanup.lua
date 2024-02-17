@@ -17,6 +17,7 @@ local lightblacklist = {
 	"f4",
 	"playx",
 	"gcompute",
+	"media",
 }
 
 local function VGUICleanup()

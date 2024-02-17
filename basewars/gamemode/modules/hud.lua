@@ -1,31 +1,39 @@
 MODULE.Name 	= "HUD"
 MODULE.Author 	= "Q2F2 & Ghosty"
 MODULE.Realm 	= 2
-MODULE.Credits 	= "Based on geist by ghosty; https://github.com/TrenchFroast/ghostys-server-stuff/blob/master/lua/autorun/client/geist_hud.lua"
 
 local tag = "BaseWars.HUD"
 
 function MODULE:__INIT()
-
+-- default value for base = 1080
+local function respH(pixels, base)
+  base = base or 1080
+  return ScrH()/(base/pixels)
+end
 	surface.CreateFont(tag, {
 		font = "Roboto",
-		size = 16,
+		size = respH(16),
 		weight = 800,
 	})
 
 	surface.CreateFont(tag .. ".Large", {
 		font = "Roboto",
-		size = 20,
+		size = respH(22),
 		weight = 1200,
 	})
 
 	surface.CreateFont(tag .. ".Time", {
 		font = "Roboto",
-		size = 28,
+		size = respH(28),
 		weight = 800,
 	})
 
 end
+
+-- Icon
+local heart = Material("icon16/heart.png")
+local shield = Material("icon16/shield.png")
+local money = Material("icon16/money.png")
 
 local clamp = math.Clamp
 local floor = math.floor
@@ -55,27 +63,48 @@ local oldHP = 0
 
 local oldaW = 0
 local oldAM = 0
+-- base
+--local shade = Color(0, 0, 0, 140)
+--local trans = Color(255, 255, 255, 150)
+--local textc = Color(100, 150, 200, 255)
+--local hpbck = Color(255, 0  , 0  , 100)
+--local pwbck = Color(0  , 0  , 255, 100)
+--local red	= Color(255, 0  , 0	 , 245)
 
-local shade = Color(0, 0, 0, 140)
-local trans = Color(255, 255, 255, 150)
-local textc = Color(100, 150, 200, 255)
-local hpbck = Color(255, 0  , 0  , 100)
-local pwbck = Color(0  , 0  , 255, 100)
-local red	= Color(255, 0  , 0	 , 245)
+-- Autre
+local bg	= Color(24, 68, 92)
+local bg2   = Color(64, 100, 124)
+local armor = Color(70, 130, 172)
+local white = Color(255, 255, 255)
+local red   = Color(256, 92, 132)
+local orange= Color(232, 124, 28)
+local yellow= Color(243, 244, 119)
+
+function SizeToClient(x,y) return ScrW()*(x/1920), ScrH()*(y/1080)
+end
+
+-- default value for base = 1920
+local function respW(pixels, base)
+	base = base or 1920
+return ScrW()/(base/pixels)
+end
+
+-- default value for base = 1080
+local function respH(pixels, base)
+base = base or 1080
+return ScrH()/(base/pixels)
+end
 
 function MODULE:DrawStructureInfo(ent)
 
-	local Pos = ent:GetPos()
-	Pos.z = Pos.z + 14
-
-	Pos = Pos:ToScreen()
+	local xPos, yPos = ScrW() / 2, ScrH() / 20
 
 	local name = (ent.PrintName or (ent.GetName and ent:GetName()) or (ent.Nick and ent:Nick()) or ent:GetClass()):Trim()
 	local W = BaseWars.Config.HUD.EntW
 	local H = BaseWars.Config.HUD.EntH
 
-	local oldx, oldy = Pos.x, Pos.y
-	local curx, cury = Pos.x, Pos.y
+	local oldx, oldy = xPos, yPos
+	local curx, cury = xPos, yPos
 	local w, h
 	local Font = BaseWars.Config.HUD.EntFont
 	local Font2 = BaseWars.Config.HUD.EntFont2
@@ -85,20 +114,20 @@ function MODULE:DrawStructureInfo(ent)
 	curx = curx - W / 2
 	cury = cury - H / 2
 
-	surface.SetDrawColor(shade)
+	surface.SetDrawColor(bg)
 	surface.DrawRect(curx, cury, W, H)
 
 	surface.SetFont(Font)
 	w, h = surface.GetTextSize(name)
 
-	draw.DrawText(name, Font, oldx - w / 2, cury, shade)
-	draw.DrawText(name, Font, oldx - w / 2, cury, textc)
+	draw.DrawText(name, Font, oldx - w / 2, cury, bg)
+	draw.DrawText(name, Font, oldx - w / 2, cury, white)
 
 	if ent:Health() > 0 then
 
 		cury = cury + H + 1
 
-		surface.SetDrawColor(shade)
+		surface.SetDrawColor(bg)
 		surface.DrawRect(curx, cury, W, H)
 
 		local MaxHealth = ent:GetMaxHealth() or 100
@@ -106,35 +135,13 @@ function MODULE:DrawStructureInfo(ent)
 
 		local HPLen = W * (ent:Health() / MaxHealth)
 
-		draw.RoundedBox(0, curx + Padding, cury + Padding, HPLen + EndPad, H + EndPad, hpbck)
+		draw.RoundedBox(0, curx + Padding, cury + Padding, HPLen + EndPad, H + EndPad, red)
 
 		surface.SetFont(Font2)
 		w, h = surface.GetTextSize(HealthStr)
 
-		draw.DrawText(HealthStr, Font2, oldx - w / 2, cury + Padding, shade)
-		draw.DrawText(HealthStr, Font2, oldx - w / 2, cury + Padding, color_white)
-
-	end
-
-	if ent.GetPower then
-
-		cury = cury + H + 1
-
-		surface.SetDrawColor(shade)
-		surface.DrawRect(curx, cury, W, H)
-
-		local MaxPower = ent:GetMaxPower() or 100
-		local PowerStr = (ent:GetPower() > 0 and ent:GetPower() .. "/" .. MaxPower .. " PW") or BaseWars.LANG.PowerFailure
-
-		local PWLen = W * (ent:GetPower() / MaxPower)
-
-		draw.RoundedBox(0, curx + Padding, cury + Padding, PWLen + EndPad, H + EndPad, pwbck)
-
-		surface.SetFont(Font2)
-		w, h = surface.GetTextSize(PowerStr)
-
-		draw.DrawText(PowerStr, Font2, oldx - w / 2, cury + Padding, shade)
-		draw.DrawText(PowerStr, Font2, oldx - w / 2, cury + Padding, color_white)
+		draw.DrawText(HealthStr, Font2, oldx - w / 2, cury + Padding, bg)
+		draw.DrawText(HealthStr, Font2, oldx - w / 2, cury + Padding, white)
 
 	end
 
@@ -142,7 +149,7 @@ function MODULE:DrawStructureInfo(ent)
 
 		cury = cury + H + 1
 
-		surface.SetDrawColor(shade)
+		surface.SetDrawColor(bg)
 		surface.DrawRect(curx, cury, W, H)
 
 		local Str = BaseWars.LANG.HealthFailure
@@ -150,8 +157,8 @@ function MODULE:DrawStructureInfo(ent)
 		surface.SetFont(Font2)
 		w, h = surface.GetTextSize(Str)
 
-		draw.DrawText(Str, Font2, oldx - w / 2, cury + Padding - 1, shade)
-		draw.DrawText(Str, Font2, oldx - w / 2, cury + Padding - 1, color_white)
+		draw.DrawText(Str, Font2, oldx - w / 2, cury + Padding - 1, bg)
+		draw.DrawText(Str, Font2, oldx - w / 2, cury + Padding - 1, white)
 
 	end
 
@@ -163,18 +170,26 @@ function MODULE:DrawDisplay()
 	local Ent = me:GetEyeTrace().Entity
 
 	if BaseWars.Ents:ValidClose(Ent, me, 200) and (Ent.IsElectronic or Ent.IsGenerator or Ent.DrawStructureDisplay) then
-
 		self:DrawStructureInfo(Ent)
-
+	elseif Ent:IsPlayer() then
+		draw.RoundedBox( 15, ScrW() - respW( 210 ), ScrH() / 2 - respH( 15 ), respW( 200 ), respH( 50 ), bg )
+		draw.DrawText( Ent:GetNW2Bool( "Armed", false ) && "Armé" || "Non armé", tag .. ".Large", ScrW() - respW( 210 ) + respW( 100 ), ScrH() / 2, white, 1, 1 )
 	end
 
 end
 
 local StuckTime
+local me = LocalPlayer and LocalPlayer()
+local stuckstr = CLIENT and string.format(BaseWars.LANG.StuckText, (input.LookupBinding("+duck") or "NONE"):upper(), (input.LookupBinding("+jump") or "NONE"):upper())
+local Key = CLIENT and (input.LookupBinding("+menu") or "NONE"):upper() .. BaseWars.LANG.SpawnMenuControl
+local col2 = Color(159,1,1,150)
+local col1 = Color(1,159,1,150)
+
+local enable_keyinfo = CLIENT and CreateClientConVar("bw_enable_keyinfo", "1", true, false)
+
 function MODULE:Paint()
 
-	local me = LocalPlayer()
-	if not me:IsPlayer() or not IsValid(me) then return end
+	if not IsValid(me) then me = LocalPlayer() return end
 
 	self:DrawDisplay()
 
@@ -188,7 +203,7 @@ function MODULE:Paint()
 	local suF = Lerp(0.15, oldAM, su)
 	oldAM = suF
 
-	local pbarW, pbarH = 256, 6
+	local pbarW, pbarH = 10, 6
 	local sW, sH = ScrW(), ScrH()
 
 	local Karma = me:GetKarma()
@@ -200,19 +215,22 @@ function MODULE:Paint()
 	local LevelText = string.format(BaseWars.LANG.LevelText, Level)
 	local XPText = string.format(BaseWars.LANG.XPText, XP, NextLevelXP)
 	local LvlText = LevelText .. ",     " .. XPText
+	
 
-	local hW = Calc(hp, 100, 0, pbarW)
-	local aW = Calc(su, 100, 0, pbarW)
+
+	local hW = Calc(hp, 100, 0, 285.75)
+	local aW = Calc(su, 100, 0, 285.75)
+	local lW = Calc(XP, NextLevelXP, 0, 1590)
 
 	local nhW,naW = 0,0
 
 	hW = Lerp(0.15,oldhW,hW)
 	oldhW = hW
-	nhW = pbarW - hW
+	nhW =  285.75 - hW
 
 	aW = Lerp(0.15,oldaW,aW)
 	oldaW = aW
-	naW = pbarW - aW
+	naW =  285.75 - aW
 
 	if BaseWars.PSAText then
 
@@ -228,65 +246,78 @@ function MODULE:Paint()
 
 	end
 
-	local Key = (input.LookupBinding("+menu") or ""):upper()
+-----------------------------------------------------------------------------------------
+-- RoundedBox
+draw.RoundedBox(15, respW(7.5), respH(950), respW(300), respH(120), bg)
+
+-- Armor
+draw.RoundedBox(10, respW(15), respH(957), respW(285), respH(30), bg2)
+draw.RoundedBox(0, respW(15), respH(972), respW(285), respH(15), bg2)
+
+draw.RoundedBox(10, respW(15), respH(957), respW(aW - 0.75), respH(30), armor)
+draw.RoundedBox(0, respW(15), respH(972), respW(aW), respH(15), armor)
+
+draw.DrawText(round(suF), tag .. ".Large", respW(160), respH(961.25), white, TEXT_ALIGN_CENTER)
+
+surface.SetDrawColor(white)
+surface.SetMaterial(shield)
+surface.DrawTexturedRect(respW(22.5), respH(963.5), respH(18.75), respW(18.75))
+
+-- Hp
+draw.RoundedBox(0, respW(15), respH(995), respW(285), respH(30), bg2)
+
+draw.RoundedBox(0, respW(15), respH(995), respW(hW), respH(30), red)
+
+draw.DrawText(round(hpF), tag .. ".Large", respW(160), respH(998.75), white, TEXT_ALIGN_CENTER)
+
+surface.SetDrawColor(white)
+surface.SetMaterial(heart)
+surface.DrawTexturedRect(respW(22.5), respH(1002.5), respH(18.75), respW(18.75))
+
+-- money
+draw.RoundedBox(10, respW(15), respH(1032.5), respW(285), respH(30), bg2)
+draw.RoundedBox(0, respW(15), respH(1032.5), respW(285), respH(15), bg2)
+
+
+surface.SetDrawColor(white)
+surface.SetMaterial(money)
+surface.DrawTexturedRect(respW(22.5), respH(1037.5), respW(18.75), respH(18.75))
+
+-- level
+draw.RoundedBox(100, respW(318.75), respH(1062.5), respW(1590), respH(5.25), bg)
+draw.RoundedBox(100, respW(318.75), respH(1062.5), lW, respH(5.25), orange)
+draw.DrawText(LvlText, tag .. ".Large", respW(360), respH(1035), orange, TEXT_ALIGN_LEFT)
+draw.DrawText("LVL", tag .. ".Large", respW(322.5), respH(1035), white, TEXT_ALIGN_LEFT)
+
+-- Karma
+draw.DrawText(KarmaText, tag .. ".Large", respW(382), respH(1016), yellow, TEXT_ALIGN_LEFT)
+draw.DrawText("Karma", tag .. ".Large", respW(322), respH(1016), white, TEXT_ALIGN_LEFT)
+
+-- time
+draw.DrawText(os.date("%H:%M"), tag .. ".Large", respW(375), respH(995), yellow, TEXT_ALIGN_LEFT)
+draw.DrawText("Heure", tag .. ".Large", respW(322.5), respH(995), white, TEXT_ALIGN_LEFT)
+	local money = me.GetMoney and me:GetMoney() or 0
+	local mon = string.format(BaseWars.LANG.CURFORMER, money)
+draw.DrawText(mon, tag .. ".Large", respW(160), respH(1037.5), white, TEXT_ALIGN_CENTER)
+
+------------------------------------------------------------------------------------
 
 	-- Karma, XP + Controls
-	draw.DrawText(BaseWars.LANG.MainMenuControl, tag, sW - 5, (BaseWars.PSAText and 20 or 3), red, TEXT_ALIGN_RIGHT)
-	draw.DrawText(Key .. BaseWars.LANG.SpawnMenuControl, tag, sW - 5, (BaseWars.PSAText and 33 or 16), red, TEXT_ALIGN_RIGHT)
-
-	draw.DrawText(os.date("%H:%M"), tag .. ".Time", sW / 2, (BaseWars.PSAText and 20 or 3), trans, TEXT_ALIGN_CENTER)
-
-	draw.DrawText(KarmaText, tag, 64 + 26 + pbarW / 2, sH - 128 - 48 - 8, shade, TEXT_ALIGN_CENTER)
-	draw.DrawText(KarmaText, tag, 64 + 24 + pbarW / 2, sH - 128 - 48 - 10, trans, TEXT_ALIGN_CENTER)
-
-	draw.DrawText(LvlText, tag, 64 + 26 + pbarW / 2, sH - 128 - 8, shade, TEXT_ALIGN_CENTER)
-	draw.DrawText(LvlText, tag, 64 + 24 + pbarW / 2, sH - 128 - 10, trans, TEXT_ALIGN_CENTER)
-
-	-- Health
-
-	draw.DrawText("HP", tag, 64 + 18, sH - 128 - 32 - 8, shade, TEXT_ALIGN_RIGHT)
-	draw.DrawText("HP", tag, 64 + 16, sH - 128 - 32 - 10, trans, TEXT_ALIGN_RIGHT)
-
-	if hW > 0.01 then
-
-		draw.RoundedBox(0, 64 + 24, sH - 128 - 32 - 4, hW, pbarH, Color(1,159,1,150))
-		draw.RoundedBox(0, 64 + 24 - nhW + pbarW, sH - 128 - 32 - 4, nhW, pbarH, Color(159,1,1,150))
-
-	else
-
-		draw.RoundedBox(0, 64 + 24, sH - 128 - 32 - 4, pbarW, pbarH, Color(159,1,1,150))
-
+	
+	if enable_keyinfo:GetBool() then
+		draw.DrawText(BaseWars.LANG.MainMenuControl, tag, sW - 5, (BaseWars.PSAText and 20 or 3), red, TEXT_ALIGN_RIGHT)
+		draw.DrawText(Key, tag, sW - 5, (BaseWars.PSAText and 33 or 16), red, TEXT_ALIGN_RIGHT)
 	end
-
-	draw.DrawText(round(hpF), tag, pbarW + 98, sH - 128 - 32 - 8, shade, TEXT_ALIGN_LEFT)
-	draw.DrawText(round(hpF), tag, pbarW + 96, sH - 128 - 32 - 10, trans, TEXT_ALIGN_LEFT)
-
-	-- Armor
-	draw.DrawText("SUIT", tag, 64 + 18, sH - 128 - 16 - 8, shade, TEXT_ALIGN_RIGHT)
-	draw.DrawText("SUIT", tag, 64 + 16, sH - 128 - 16 - 10, trans, TEXT_ALIGN_RIGHT)
-
-	if aW > 0.01 then
-
-		draw.RoundedBox(0, 64 + 24, sH - 128 - 16 - 4, aW, pbarH, Color(90,120,200,150))
-		draw.RoundedBox(0, 64 + 24 - naW + pbarW, sH - 128 - 16 - 4, naW, pbarH, Color(10,40,150,150))
-
-	else
-
-		draw.RoundedBox(0, 64 + 24, sH - 128 - 16 - 4, pbarW, pbarH, Color(10,40,150,150))
-
-	end
-
-	draw.DrawText(round(suF), tag, pbarW + 98, sH - 128 - 16 - 8, shade, TEXT_ALIGN_LEFT)
-	draw.DrawText(round(suF), tag, pbarW + 96, sH - 128 - 16 - 10, trans, TEXT_ALIGN_LEFT)
+	
 
 	if me.Stuck and me:Stuck() and me:GetMoveType() == MOVETYPE_WALK then
 
 		if not StuckTime then StuckTime = CurTime() end
 
 		if CurTime() > StuckTime + 1 then
-
-			draw.DrawText(BaseWars.LANG.StuckText, tag .. ".Large", sW / 2 + 2, sH / 2 + 2, shade, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-			draw.DrawText(BaseWars.LANG.StuckText, tag .. ".Large", sW / 2, sH / 2, trans, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			
+			draw.DrawText(stuckstr, tag .. ".Large", sW / 2 + 2, sH / 2 + 2, white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	
 
 		end
 
@@ -313,3 +344,40 @@ function HideHUD(name)
 
 end
 hook.Add("HUDShouldDraw", tag .. ".HideOldHUD", HideHUD)
+
+if CLIENT then
+	surface.CreateFont( "AVHUD:PlayerName", {
+		font = "Roboto",
+		size = ScreenScale( 30 ),
+		weight = ScreenScale( 500 ),
+	} )
+
+	surface.CreateFont( "AVHUD:PlayerFac", {
+		font = "Roboto",
+		size = ScreenScale( 15 ),
+		weight = ScreenScale( 500 ),
+	} )
+
+	hook.Add( "PostDrawOpaqueRenderables", "AVHUD:DrawPlayerInfos", function()
+		local ply = LocalPlayer()
+
+		for _, v in ipairs( player.GetAll() ) do
+			if v == ply then continue end
+
+			local ang = v:GetAngles()
+			local plyAng = ply:GetAngles()
+			local pos = v:GetPos() + ang:Up() * 87
+		 
+			ang:RotateAroundAxis( ang:Forward(), 90 )
+			ang:RotateAroundAxis( ang:Right(), 90 )
+
+			plyAng:RotateAroundAxis( plyAng:Up(), -90 )
+		 
+			cam.Start3D2D( pos, Angle( 0, plyAng.y, 90 ), 0.1 )
+				draw.DrawText( v:Nick(), "AVHUD:PlayerName", 0, 0, color_white, 1 )
+				draw.DrawText( team.GetName( v:Team() ), "AVHUD:PlayerFac", 0, 75, team.GetColor( v:Team() ), 1 )
+				draw.DrawText( "Niveau " .. v:GetLevel(), "AVHUD:PlayerFac", 0, 115, color_white, 1 )
+			cam.End3D2D()
+		end
+	end )
+end

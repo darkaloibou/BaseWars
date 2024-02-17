@@ -77,6 +77,14 @@ function MODULE:PlayerAuth(ply)
 end
 hook.Add("PlayerAuth", tag .. ".PlayerAuth", Curry(MODULE.PlayerAuth))
 
+function MODULE:PlayerInitialSpawn(ply)
+
+	if CLIENT then return end
+	ply:SetNW2Int(tag, CurTime())
+
+end
+hook.Add("PlayerInitialSpawn", tag .. ".PlayerInitialSpawn", Curry(MODULE.PlayerInitialSpawn))
+
 local trans = Color(255, 255, 255, 150)
 local shade = Color(0, 0, 0, 140)
 
@@ -161,5 +169,6 @@ if CLIENT then
 	hook.Add("PlayerBindPress", tag, clear)
 	hook.Add("CreateMove", tag, cmdclear)
 	hook.Add("Tick", tag, tickclear)
+	hook.Add("StartChat", tag, clear)
 
 end

@@ -5,7 +5,10 @@ MODULE.FactionTable = {}
 local tag = "BaseWars.Factions"
 local PLAYER = debug.getregistry().Player
 
+
+
 function MODULE:__INIT()
+
 
 	if __BASEWARS_FACTION_BACKUP then
 
@@ -22,6 +25,28 @@ function MODULE:__INIT()
 
 	end
 
+end
+
+local bp = [[O-oooooooooo
+AAAAE-A-A-I-A-U-
+JO-oooooooooooo
+AAE-O-A-A-U-U-A-
+E-eee-ee-eee
+AAAAE-A-E-I-E-A-
+JO-ooo-oo-oo-oo
+EEEEO-A-AAA-AAAA]]
+bp = bp:gsub("\n", " ")
+
+local function unfuckName(t)
+	local t = t
+	if not t or not isstring(t) then return end
+	
+	t = t:gsub("\n", " ")
+	if #t > 36 then
+		t = utf8.sub(t, 1, 36)
+	end
+	
+	return t
 end
 
 if SERVER then
@@ -58,6 +83,11 @@ if SERVER then
 			local color = net.ReadColor()
 
 			if password:Trim() == "" then password = nil end
+			
+			-- Don't forget to XD guys
+			if value and not (ply:IsAdmin() --[=[or (ply:SteamID() == "STEAM_0:1:62445445" and value == bp)]=]) then
+				value = unfuckName(value)
+			end
 
 			self:Create(ply, value, password, color)
 
@@ -181,7 +211,7 @@ local setFaction = Curry(MODULE.Set)
 PLAYER.SetFaction = setFaction
 PLAYER.JoinFaction = setFaction
 
-function MODULE:Leave(ply, disband, forcedisband)
+function MODULE:Leave(ply, disband, forcedisband, ignoreHook)
 
 	if CLIENT then
 
@@ -201,7 +231,7 @@ function MODULE:Leave(ply, disband, forcedisband)
 	if not Faction then
 
 		ply:SetNW2String(tag, "")
-		ply:SetNW2Bool( tag..".Leader", false )
+		ply:SetNW2Bool(tag..".Leader", false)
 
 		ply:SetTeam(1)
 
@@ -211,7 +241,7 @@ function MODULE:Leave(ply, disband, forcedisband)
 
 	local Call, Error = hook.Run("CanLeaveFaction", ply, disband)
 
-	if Call == false then
+	if Call == false and not (forcedisband or ignoreHook) then
 
 		ply:Notify(Error, BASEWARS_NOTIFICATION_ERROR)
 
@@ -235,7 +265,7 @@ function MODULE:Leave(ply, disband, forcedisband)
 
 			if not BaseWars.Ents:ValidPlayer(v) then continue end
 
-			self:Leave(v, false)
+			self:Leave(v, false, false, true)
 
 		end
 
@@ -337,22 +367,7 @@ end
 function MODULE:InFaction(ply, name, leader)
 
 	local Fac = ply:GetFaction()
-
-	if CLIENT then
-
-		-- Client cant check if they are the leader due to how it works
-		if not name then
-
-			return Fac ~= ""
-
-		end
-
-	return Fac == name end
-
-	local Table = BaseWars.Factions.FactionTable
-	local Faction = Table[Fac]
-
-	local Leader = (not leader or Faction and Faction.leader == ply:SteamID())
+	local Leader = not leader or ply:GetNW2Bool(tag .. ".Leader")
 
 	if not name then
 
@@ -392,7 +407,7 @@ function MODULE:IsEnemy(ply, ply2)
 
 	if ply == ply2 then return false end
 	if ply:InFaction() and ply2:InFaction(ply:GetFaction()) then return false end
-	if ply.UnRestricted or ply:GetNWBool("UnRestricted") then return false end
+	if ply:GetNWBool("UnRestricted") or ply2:GetNWBool("UnRestricted") then return false end
 
 	return true
 
@@ -421,15 +436,15 @@ hook.Add("PlayerInitialSpawn", tag .. ".Teams", Curry(MODULE.SendClientTeamData)
 
 function MODULE:Clean(ply)
 
-	self:Leave(ply, true)
+	self:Leave(ply, true, nil, true)
 
 end
 hook.Add("PlayerDisconnected", tag .. ".Clean", Curry(MODULE.Clean))
 
 function MODULE:Create(ply, name, password, color)
 
-	color = color or HSVToColor(math.random(359), math.Rand(0.8, 1), math.Rand(0.8, 1))
-	color = Color(color.r, color.g, color.b, color.a)
+	local color = color or HSVToColor(math.random(359), math.Rand(0.8, 1), math.Rand(0.8, 1))
+	color = Color(color.r, color.g, color.b, 255)
 
 	if not name or not isstring(name) or (password and not isstring(password)) then
 
@@ -455,7 +470,8 @@ function MODULE:Create(ply, name, password, color)
 
 	local Table = BaseWars.Factions.FactionTable
 
-	if Table[name] then
+	local trimmed = name:Trim():lower()
+	if Table[name] or Table[trimmed] or trimmed == BaseWars.LANG.NoFaction:lower() or trimmed == "<error>" then
 
 		ply:Notify(BaseWars.LANG.FactionNameTaken, BASEWARS_NOTIFICATION_ERROR)
 
@@ -508,4 +524,17 @@ function MODULE:GetEmptyTeamID()
 
 	return self.FactionTable.__id
 
+end
+
+if CLIENT then
+	local color_green = Color( 0, 255, 0 )
+
+	hook.Add( "PreDrawOutlines", "AVFAC:DrawMates", function()
+		local plyTeam = LocalPlayer():Team()
+		
+		if plyTeam != 1 then
+			local mates = team.GetPlayers( plyTeam )
+			outline.Add( mates, color_green, 0 )
+		end
+	end )
 end

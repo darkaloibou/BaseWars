@@ -75,6 +75,8 @@ function MODULE:CreateNPCs()
 		Ent:Spawn()
 		Ent:Activate()
 
+		Ent:CPPISetOwner(game.GetWorld())
+
 	end
 
 end

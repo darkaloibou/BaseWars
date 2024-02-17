@@ -5,12 +5,12 @@ ENT.Type = "anim"
 ENT.PrintName = "HealthPad"
 ENT.Model = "models/props_lab/teleplatform.mdl"
  
-ENT.PowerRequired = 10
+ENT.PowerRequired = -1
 ENT.PowerCapacity = 5000
  
 ENT.Drain = 50
  
-ENT.RegenRate = 1
+ENT.RegenRate = 3
 ENT.Plys = {}
 
 ENT.Sound = Sound("npc/vort/health_charge.wav")

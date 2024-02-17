@@ -4,7 +4,7 @@ ENT.Base 		= "base_gmodentity"
 ENT.Type 		= "anim"
 ENT.PrintName 	= "Repair Kit"
 
-ENT.Model 		= "models/Items/car_battery01.mdl"
+ENT.Model 		= "models/tf2defaultmodels/skirmisherstuff/toolbox.mdl"
 
 if CLIENT then return end
 
@@ -62,9 +62,9 @@ function ENT:PhysicsCollide(data, phys)
 		
 	return end
 	
-	if ent.DestructableProp and not self.Removing and ent:Health() < ent.MaxHealth - 1 then
+	if ent.DestructableProp and not self.Removing and ent:Health() < ent:GetMaxHealth() - 1 then
 	
-		ent:SetHealth(ent.MaxHealth)
+		ent:SetHealth(ent:GetMaxHealth())
 		ent:SetColor(color_white)
 	
 		self.Removing = true

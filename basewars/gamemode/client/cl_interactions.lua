@@ -5,7 +5,7 @@ LookEnt = {}
 LookEnt.Key = Material("custom/key.png")
 LookEnt.Dist = 150
 
-LookEnt.ConVarName = "interactions_enabled"
+LookEnt.ConVarName = "bw_interactions_enabled"
 LookEnt.ConVar = CreateConVar(LookEnt.ConVarName, 1, FCVAR_ARCHIVE, "Enable the indicators for entities? 1 = Enabled, 0 = Disabled")
 
 LookEnt.Draw = true
@@ -62,8 +62,6 @@ function LookEnt:Paint()
 
 	surface.SetFont("LookEnt.Text")
 	local actionW, actionH = surface.GetTextSize(action)
-
-	surface.SetFont("LookEnt.Text")
 	local nameW, nameH = surface.GetTextSize(name)
 
 	local wholeW = actionW + nameW + 6
@@ -105,21 +103,21 @@ local UseBind = input.LookupBinding("+use")
 
 --The awful part down here
 LookEnt:RegisterEnt("prop_door_rotating", UseBind, function(aimEnt)
-	return "Use", "door"
+	return BaseWars.LANG.Use, BaseWars.LANG.Door
 end,
 function(aimEnt)
 	return color1, color2
 end)
 
 LookEnt:RegisterEnt("bw_base_moneyprinter", UseBind, function(aimEnt)
-	return "Collect", "money"
+	return BaseWars.LANG.Collect, BaseWars.LANG.Money
 end,
 function(aimEnt)
 	return aimEnt:GetMoney() > 0 and color1 or color3, color2
 end)
 
 LookEnt:RegisterEnt("bw_spawnpoint", UseBind, function(aimEnt)
-	return aimEnt:GetUsable() and "Activate" or "Look at", "spawnpoint"
+	return aimEnt:GetUsable() and BaseWars.LANG.Activate or BaseWars.LANG.LookAt, BaseWars.LANG.Spawnpoint
 end,
 function(aimEnt)
 	return color1, color2
@@ -129,56 +127,117 @@ function(aimEnt)
 end)
 
 LookEnt:RegisterEnt("bw_druglab", UseBind, function(aimEnt)
-	return "Use", "Drug Lab"
+	return BaseWars.LANG.Use, "Drug Lab"
 end,
 function(aimEnt)
 	return color1, color2
 end)
 
 LookEnt:RegisterEnt("bw_dispenser_armor", UseBind, function(aimEnt)
-	return "Use", "Armor dispenser"
+	return BaseWars.LANG.Use, "Armor Dispenser"
+end,
+function(aimEnt)
+	return aimEnt:GetUsable() and color1 or color3, color2
+end)
+LookEnt:RegisterEnt("bw_dispenser_armor2", UseBind, function(aimEnt)
+	return BaseWars.LANG.Use, "Armor Dispenser"
 end,
 function(aimEnt)
 	return aimEnt:GetUsable() and color1 or color3, color2
 end)
 
 LookEnt:RegisterEnt("bw_dispenser_paper", UseBind, function(aimEnt)
-	return "Use", "Paper dispenser"
+	return BaseWars.LANG.Use, "Paper Dispenser"
 end,
 function(aimEnt)
 	return aimEnt:GetUsable() and color1 or color3, color2
 end)
 
 LookEnt:RegisterEnt("bw_dispenser_ammo", UseBind, function(aimEnt)
-	return "Use", "Ammo dispenser"
+	return BaseWars.LANG.Use, "Ammo Dispenser"
+end,
+function(aimEnt)
+	return aimEnt:GetUsable() and color1 or color3, color2
+end)
+LookEnt:RegisterEnt("bw_dispenser_ammo2", UseBind, function(aimEnt)
+	return BaseWars.LANG.Use, "Ammo Dispenser"
 end,
 function(aimEnt)
 	return aimEnt:GetUsable() and color1 or color3, color2
 end)
 
 LookEnt:RegisterEnt("bw_vendingmachine", UseBind, function(aimEnt)
-	return "Use", "Vending machine"
+	return BaseWars.LANG.Use, "Vending Machine"
 end,
 function(aimEnt)
 	return aimEnt:GetUsable() and color1 or color3, color2
 end)
 
 LookEnt:RegisterEnt("bw_drink_drug", UseBind, function(aimEnt)
-	return "Use", aimEnt:GetDrugEffect() or "Drug"
+	return BaseWars.LANG.Use, aimEnt:GetDrugEffect() or BaseWars.LANG.Drug
 end,
 function(aimEnt)
 	return color1, color2
 end)
 
 LookEnt:RegisterEnt("bw_drink_vendingsoda", UseBind, function(aimEnt)
-	return "Drink", "Soda"
+	return BaseWars.LANG.Drink, BaseWars.LANG.Soda
 end,
 function(aimEnt)
 	return color1, color2
 end)
 
 LookEnt:RegisterEnt("bw_npc", UseBind, function(aimEnt)
-	return "Talk to", "help NPC"
+	return BaseWars.LANG.TalkTo, BaseWars.LANG.HelpNPC
+end,
+function(aimEnt)
+	return color1, color2
+end)
+
+LookEnt:RegisterEnt("bw_explosive_c4", UseBind, function(aimEnt)
+	return BaseWars.LANG.Defuse, "C4"
+end,
+function(aimEnt)
+	return color1, color2
+end)
+
+LookEnt:RegisterEnt("bw_explosive_bigbomb", UseBind, function(aimEnt)
+	return aimEnt:GetNW2Bool("IsArmed") and BaseWars.LANG.Defuse or BaseWars.LANG.Plant, "Big Bomb"
+end,
+function(aimEnt)
+	return color1, color2
+end)
+
+LookEnt:RegisterEnt("bw_explosive_mine", UseBind, function(aimEnt)
+	return aimEnt:GetNW2Bool("Armed") and BaseWars.LANG.Defuse or BaseWars.LANG.Plant, "Mine"
+end,
+function(aimEnt)
+	return color1, color2
+end)
+
+LookEnt:RegisterEnt("bw_explosive_mine_power", UseBind, function(aimEnt)
+	return aimEnt:GetNW2Bool("Armed") and BaseWars.LANG.Defuse or BaseWars.LANG.Plant, "Mine"
+end,
+function(aimEnt)
+	return color1, color2
+end)
+
+LookEnt:RegisterEnt("bw_explosive_mine_speed", UseBind, function(aimEnt)
+	return aimEnt:GetNW2Bool("Armed") and BaseWars.LANG.Defuse or BaseWars.LANG.Plant, "Mine"
+end,
+function(aimEnt)
+	return color1, color2
+end)
+
+LookEnt:RegisterEnt("bw_explosive_mine_shock", UseBind, function(aimEnt)
+	return aimEnt:GetNW2Bool("Armed") and BaseWars.LANG.Defuse or BaseWars.LANG.Plant, "Mine"
+end,
+function(aimEnt)
+	return color1, color2
+end)
+
+LookEnt:RegisterEnt("bw_explosive_nuke", UseBind, function(aimEnt)
+	return aimEnt:GetNW2Bool("IsArmed") and BaseWars.LANG.Defuse or BaseWars.LANG.Plant, "Nuke"
 end,
 function(aimEnt)
 	return color1, color2

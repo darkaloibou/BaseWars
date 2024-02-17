@@ -17,9 +17,9 @@ if SERVER then
 
 	end
 
-	function ENT:NetworkLines(lines)
+	function ENT:NetworkData(data)
 
-		self:SetNWString("textscreen_lines", table.concat(lines,"\n"))
+		self:SetNWString("textscreen_lines", data)
 
 	end
 
@@ -56,46 +56,31 @@ else
 
 		local l = self.Lines
 
-		local col = color_white
+		local col = Color(255,255,255)
 		local font = GetFont(24)
 
 		local y = 0
 
 		for _, line in next, l do
 
-
-			line = line:gsub("\\f","f;")
-			line = line:gsub("\\c","c;")
-			
-			if line:match("c:%d- %d- %d- %d+;?") then
+			if line:match("\2(%d-)\1(%d-)\1(%d-)\1(%d-)\11") then
 				
-				local r,g,b,a = line:match("c:(%d-) (%d-) (%d-) (%d+);?")
+				local r,g,b,a = line:match("\2(%d-)\1(%d-)\1(%d-)\1(%d-)\11")
 
 				col = Color(tonumber(r), tonumber(g), tonumber(b), tonumber(a))
-				line = line:gsub("c:%d- %d- %d- %d+;?", "")
-
-			elseif line:match("c:%d- %d- %d+;?") then
-				
-				local r,g,b,a = line:match("c:(%d-) (%d-) (%d+);?")
-				a = 255
-
-				col = Color(tonumber(r), tonumber(g), tonumber(b), tonumber(a))
-				line = line:gsub("c:%d- %d- %d+;?", "")
+				line = line:gsub("\2%d-\1%d-\1%d-\1%d-\11", "")
 
 			end
 
-			if line:match("f:%d+;?") then
+			if line:match("\3%d-\11") then
 				
-				local siz = line:match("f:(%d+)")
+				local siz = line:match("\3(%d-)\11")
 
 				font = GetFont(tonumber(siz))
 
-				line = line:gsub("f:(%d+);?", "")
+				line = line:gsub("\3%d-\11", "")
 
-			end	
-
-			line = line:gsub("f;","\\f")
-			line = line:gsub("c;","\\c")
+			end
 
 			surface.SetFont(font)
 

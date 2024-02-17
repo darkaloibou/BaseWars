@@ -14,7 +14,7 @@ function ENT:Init()
 end
 
 function ENT:ThinkFunc()
-
+	
 end
 
 function ENT:ThinkFuncBypass()
@@ -143,6 +143,8 @@ if SERVER then
 
 		local dmg = dmginfo:GetDamage()
 		local Attacker = dmginfo:GetAttacker()
+		
+		if dmg < 1 then return end
 
 		self:SetHealth(self:Health() - dmg)
 

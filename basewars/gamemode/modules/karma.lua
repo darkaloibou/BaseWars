@@ -2,7 +2,6 @@ MODULE.Name 	= "Karma"
 MODULE.Author 	= "Q2F2 & Ghosty"
 
 local tag = "BaseWars.Karma"
-local tag_escaped = "basewars_karma"
 local PLAYER = debug.getregistry().Player
 
 local function isPlayer(ply)
@@ -12,18 +11,8 @@ local function isPlayer(ply)
 end
 
 function MODULE:Get(ply)
-
-	if SERVER then
 	
-		local dirName = self:Init(ply)
-		local karma = tonumber(file.Read(tag_escaped .. "/" .. dirName .. "/karma.txt", "DATA"))
-		return karma
-		
-	elseif CLIENT then
-	
-		return tonumber(ply:GetNWString(tag)) or 0
-		
-	end
+	return tonumber(ply:GetNWString(tag)) or 0
 	
 end
 PLAYER.GetKarma = Curry(MODULE.Get)
@@ -32,12 +21,7 @@ if SERVER then
 
 	function MODULE:Init(ply)
 	
-		local dirName = isPlayer(ply) and ply:SteamID64() or (isstring(ply) and ply or nil)
-		
-		if not file.IsDir(tag_escaped .. "/" .. dirName, "DATA") then file.CreateDir(tag_escaped .. "/" .. dirName) end
-		if not file.Exists(tag_escaped .. "/" .. dirName .. "/karma.txt", "DATA") then file.Write(tag_escaped .. "/" .. dirName .. "/karma.txt", 0) end
-		
-		return dirName
+		BaseWars.MySQL.InitPlayer(ply, "karma", "0")
 		
 	end
 	PLAYER.InitKarma = Curry(MODULE.Init)
@@ -49,9 +33,8 @@ if SERVER then
 	end
 
 	function MODULE:Save(ply, amount)
-	
-		local dirName = self:Init(ply)
-		file.Write(tag_escaped .. "/" .. dirName .. "/karma.txt", amount or self:Get(ply))
+
+		BaseWars.MySQL.SaveVar(ply, "karma", amount or self:Get(ply))
 		
 	end
 	PLAYER.SaveKarma = Curry(MODULE.Save)
@@ -59,7 +42,12 @@ if SERVER then
 	function MODULE:Load(ply)
 	
 		self:Init(ply)
-		ply:SetNWString(tag, tostring(self:Get(ply)))
+		
+		BaseWars.MySQL.LoadVar(ply, "karma", function(ply, var, val)
+			if not IsValid(ply) then return end
+			
+			ply:SetNWString(tag, tostring(val))
+		end)
 		
 	end
 	PLAYER.LoadKarma = Curry(MODULE.Load)
@@ -86,7 +74,7 @@ if SERVER then
 	end
 	PLAYER.AddKarma = Curry(MODULE.Add)
 	
-	hook.Add("PlayerAuthed", tag .. ".Load", Curry(MODULE.Load))
+	hook.Add("LoadData", tag .. ".Load", Curry(MODULE.Load))
 	hook.Add("PlayerDisconnected", tag .. ".Save", Curry(MODULE.Save))
 	
 end

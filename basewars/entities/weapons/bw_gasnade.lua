@@ -1,13 +1,13 @@
 AddCSLuaFile()
 
 SWEP.PrintName 				= "Gas grenade"
-SWEP.Author 				= ""
-SWEP.Instructions 			= ""
-SWEP.Purpose 				= ""
+SWEP.Author 				= "Poli & Q2F2"
+SWEP.Instructions 			= "Throw at people to kill them with poison gas"
+SWEP.Purpose 				= "Poison"
 SWEP.Contact 				= ""
 
 SWEP.Spawnable 				= true
-SWEP.AdminSpawnable 		= false
+SWEP.Category = "BaseWars"
 
 SWEP.ViewModelFOV 			= 90
 SWEP.ViewModelFlip 			= true
@@ -23,7 +23,7 @@ SWEP.SlotPos 				= 2
 SWEP.HoldType 				= "grenade"
 SWEP.Weight 				= 420
 SWEP.DrawCrosshair 			= true
-SWEP.Category 				= "nades"
+SWEP.Category 				= "BaseWars"
 SWEP.DrawAmmo 				= false
 SWEP.Base 					= "weapon_base"
 
@@ -110,19 +110,9 @@ function SWEP:Deploy()
 	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
 	self.Weapon:SetHoldType(self.HoldType)
 
-	timer.Simple(0,function()
-		if SERVER then
-			local weapon = self.Owner:GetActiveWeapon()
-			if weapon and IsValid(weapon) then
-				weapon:SetMaterial("models/dav0r/hoverball")
-			end
-		else
-			local viewmodel = self.Owner:GetViewModel()
-			if viewmodel and IsValid(viewmodel) then
-				viewmodel:SetSubMaterial(0,"models/dav0r/hoverball")
-			end
-		end
-	end)
+	if SERVER then
+		self.Weapon:SetMaterial("models/dav0r/hoverball")
+	end
 
 	return true
 
@@ -131,15 +121,7 @@ end
 function SWEP:Holster()
 
 	if SERVER then
-		local weapon = self.Owner:GetActiveWeapon()
-		if weapon and IsValid(weapon) then
-			weapon:SetMaterial("")
-		end
-	else
-		local viewmodel = self.Owner:GetViewModel()
-		if viewmodel and IsValid(viewmodel) then
-			viewmodel:SetSubMaterial(0, nil)
-		end
+		self.Weapon:SetMaterial("")
 	end
 
 	return true

@@ -3,10 +3,10 @@ AddCSLuaFile()
 ENT.Base 			= "bw_base_generator"
 ENT.PrintName 		= "Fusion Reactor"
 
-ENT.Model 			= "models/xqm/hydcontrolbox.mdl"
+ENT.Model 			= "models/props/de_train/pallet_barrels.mdl"
 
-ENT.PowerGenerated 	= 150
-ENT.PowerCapacity 	= 50000
+ENT.PowerGenerated 	= 500
+ENT.PowerCapacity 	= 95000
 
-ENT.TransmitRadius 	= 700
-ENT.TransmitRate 	= 35
+ENT.TransmitRadius 	= 750
+ENT.TransmitRate 	= 45

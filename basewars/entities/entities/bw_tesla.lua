@@ -7,7 +7,7 @@ ENT.PrintName = "Tesla Coil"
 ENT.Model = "models/props_c17/substation_transformer01d.mdl"
 ENT.Material = "models/alyx/emptool_glow"
 
-ENT.PowerRequired = 10
+ENT.PowerRequired = -1
 ENT.PowerMin = 8000
 ENT.PowerCapacity = 12500
  
@@ -22,7 +22,7 @@ ENT.Color = Color(100, 100, 255, 255)
 
 ENT.PresetMaxHealth = 2500
 
-ENT.AllwaysRaidable = true
+ENT.AlwaysRaidable = true
  
 if CLIENT then return end
 
@@ -36,6 +36,7 @@ function ENT:Init()
 end
  
 function ENT:ThinkFunc()
+	if IsValid( self:CPPIGetOwner() ) && self:CPPIGetOwner():InRaid() then return end
 
 	if self.Time + self.Delay > CurTime() then return end
 

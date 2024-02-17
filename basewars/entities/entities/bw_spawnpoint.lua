@@ -2,26 +2,36 @@ ENT.Base = "bw_base_electronics"
 ENT.Type = "anim"
 
 ENT.PrintName = "SpawnPoint"
-ENT.Model = "models/props_trainstation/trainstation_clock001.mdl"
+ENT.Model = "models/tf2defaultmodels/prefortress2teleporter/teleporter_light.mdl"
 
-ENT.PowerRequired = 1
+ENT.PowerRequired = -1
 ENT.PowerCapacity = 5000
+ENT.AutomaticFrameAdvance = true
 
-ENT.AllwaysRaidable = true
+ENT.AlwaysRaidable = true
+
 
 if SERVER then
-
+	
 	AddCSLuaFile()
 
-	local ForceAngle = Angle(-90, 0, 0)
+	local ForceAngle = Angle(0, 0, 0)
 	function ENT:Init()
-
 		self:SetAngles(ForceAngle)
-		
+		self:SetBodygroup( 1, 2 )
+		self:SetSequence( self:LookupSequence( "running" ) )
+		self:SetPlaybackRate( 1 )
+
+		local timid = "anim" .. self:EntIndex()
+
+		timer.Create( timid, self:SequenceDuration( self:LookupSequence( "running" ) ), 0, function()
+			if !IsValid( self ) then timer.Remove( timid ) return end
+			self:ResetSequence( self:LookupSequence( "running" ) )
+		end )
 	end
 	
 	function ENT:SpawnFunction(ply, tr, class)
-	
+		
 		local pos = ply:GetPos()
 		
 		local ent = ents.Create(class)
@@ -40,7 +50,8 @@ if SERVER then
 		end	
 		
 		return ent
-	
+
+
 	end
 	
 	function ENT:CheckUsable()
@@ -50,7 +61,7 @@ if SERVER then
 	end
 
 	function ENT:UseFunc(activator, caller, usetype, value)
-
+		
 		if not BaseWars.Ents:ValidPlayer(self.OwningPly) then self.OwningPly = nil end
 	
 		local ply = activator:IsPlayer() and activator or caller:IsPlayer() and caller or nil
@@ -85,6 +96,50 @@ if SERVER then
 			
 		end
 		
+		if timer.Exists( "anim" .. self:EntIndex() ) then
+			timer.Remove( "anim" .. self:EntIndex() )
+		end
 	end
 
+	function ENT:Think()
+		self:ThinkFuncBypass()
+	
+		if self:IsPowered() and self:BadlyDamaged() and math.random(0, 11) == 0 then
+			self:Spark()
+		end
+	
+		if self:WaterLevel() > 0 and not self:GetWaterProof() then
+			if not self.FirstTime and self:Health() > 25 then
+				self:SetHealth(25)
+				self:Spark()
+				self.FirstTime = true
+			end
+	
+			if self.rtb == 2 then
+				self.rtb = 0
+				self:TakeDamage(1)
+			else
+				self.rtb = self.rtb + 1
+			end
+		else
+			self.FirstTime = false
+		end
+	
+		if not self:DrainPower() or self:BadlyDamaged() then
+			if self:GetUsable() then self:SetUsable(false) end
+			self:NextThink( CurTime() ) return true
+		end
+	
+		local Res = self:CheckUsable()
+		local State = Res ~= false
+	
+		if State ~= self:GetUsable() then
+			self:SetUsable(State)
+		end
+	
+		self:ThinkFunc()
+
+		self:NextThink(CurTime())
+		return true	
+	end
 end

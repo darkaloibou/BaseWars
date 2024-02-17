@@ -7,11 +7,35 @@ qchat = {
 	Contact = "notq2f2@gmail.com",
 }
 
-local HaxrCorp = CreateClientConVar("qchat_use_haxrcorp", "0", true)
-local FontSize = CreateClientConVar("qchat_fontsize", HaxrCorp:GetBool() and "21" or "17", true)
-local TransBack = CreateClientConVar("qchat_use_transback", "1", true)
+qchat.shortcut = {
+	[".lenny"] = [[( ͡° ͜ʖ ͡°)]],
+	[".iunno"] = [[¯\_(ツ)_/¯]],
+	[".flip"] = [[(╯°□°）╯︵ ┻━┻]],
+	[".unflip"] = [[┬─┬﻿ ノ( ゜-゜ノ)]],
+}
+
+local Legacy			= CreateClientConVar("qchat_legacymode", "1", true)
+local HaxrCorp		= CreateClientConVar("qchat_use_haxrcorp", "0", true)
+local FontSize		= CreateClientConVar("qchat_fontsize", HaxrCorp:GetBool() and "21" or "17", true)
+local TransBack		= CreateClientConVar("qchat_use_transback", "0", true)
 
 function qchat.CreateFonts()
+	if Legacy then
+		surface.CreateFont("QChatFont", {
+			font = "Verdana",
+			size = FontSize:GetInt(),
+			weight = 600,
+			shadow = true,
+		})
+
+		surface.CreateFont("QChatFont2", {
+			font = "Verdana",
+			size = FontSize:GetInt(),
+			weight = 600,
+			shadow = true,
+		})
+	end
+
 	surface.CreateFont("QChatFont", {
 		font = HaxrCorp:GetBool() and "HaxrCorp S8" or "Tahoma",
 		size = FontSize:GetInt(),
@@ -31,32 +55,57 @@ qchat.CreateFonts()
 cvars.AddChangeCallback("qchat_fontsize", qchat.CreateFonts)
 cvars.AddChangeCallback("qchat_use_haxrcorp", qchat.CreateFonts)
 
-local deshou
+local colors
 
 function qchat.CreateColors()
-	local a1 = TransBack:GetBool() and 195 or 255
-	local a2 = TransBack:GetBool() and 175 or 255
-	deshou = {
-		white	= Color(204, 204, 202, a1),
-		alpha	= Color(  0,   0,   0,   0),
+	if Legacy:GetBool() then
+		colors = {
+			text						= Color(  0,   0,   0, 255),
+			alpha						= Color(  0,   0,   0,   0),
 
-		subGrey	= Color( 51,  51,  51, a2),
-		darkGrey	= Color( 45,  45,  45, a1),
-		highGrey	= Color( 78,  78,  78, a2),
+			mainBack				= Color( 10,   0,  10, 100),
+			barBack					= Color(255, 255, 255, 100),
+			groupBack				= Color( 90,   0,  90, 255),
+			textInputColor	= Color(  0,   0,   0, 200),
 
-		pink	= Color(217, 191, 194, a1),
-		pink2	= Color(169, 141, 155, a1),
-	}
+			highlightOne		= Color(255, 255, 255, 255),
+		}
+	else
+		local a1 = TransBack:GetBool() and 195 or 255
+		local a2 = TransBack:GetBool() and 175 or 255
+
+		colors = {
+			text						= Color(204, 204, 202,  a1),
+			alpha						= Color(  0,   0,   0,   0),
+
+			mainBack				= Color( 51,  51,  51,  a2),
+			barBack					= Color( 45,  45,  45,  a1),
+			groupBack				= Color( 45,  45,  45,  a1),
+			textInputColor	= Color( 78,  78,  78,  a2),
+
+			highlightOne		= Color(217, 191, 194,  a1),
+		}
+	end
 end
 
 qchat.CreateColors()
 cvars.AddChangeCallback("qchat_use_transback", qchat.CreateColors)
+cvars.AddChangeCallback("qchat_legacymode", qchat.CreateColors)
+
+function qchat.LegacyFix()
+	-- Fix fontsize for legacy mode
+	if Legacy:GetBool() then
+		HaxrCorp:SetBool(false)
+		FontSize:SetInt(14)
+	end
+end
+cvars.AddChangeCallback("qchat_legacymode", qchat.LegacyFix)
 
 function qchat:CreateChatTab()
 	-- The tab for the actual chat.
 	self.chatTab 		= vgui.Create("DPanel", self.pPanel)
 	self.chatTab.Paint 	= function(self, w, h)
-		surface.SetDrawColor(deshou.subGrey)
+		surface.SetDrawColor(colors.mainBack)
 		surface.DrawRect(0, 0, w, h)
 	end
 
@@ -72,7 +121,7 @@ function qchat:CreateChatTab()
 
 	self.chatTab.pGr 	= vgui.Create("DPanel", self.chatTab.pTBase)
 	self.chatTab.pGr.Paint 	= function(self, w, h)
-		surface.SetDrawColor(deshou.darkGrey)
+		surface.SetDrawColor(colors.groupBack)
 		surface.DrawRect(0, 0, w, h)
 	end
 
@@ -87,10 +136,14 @@ function qchat:CreateChatTab()
 
 				pan.HistoryPos = 0
 
-				if chitchat and chitchat.Say then
-					chitchat.Say(txt, self.isTeamChat and 2 or 1)
+				local team = self.isTeamChat
+
+				if chatexp and hook.Run("ChatShouldHandle", "chatexp", txt, team and CHATMODE_TEAM or CHATMODE_DEFAULT) ~= false then
+					chatexp.Say(txt, team and CHATMODE_TEAM or CHATMODE_DEFAULT)
+				elseif chitchat and chitchat.Say and hook.Run("ChatShouldHandle", "chitchat", txt, team and 2 or 1) ~= false then
+					chitchat.Say(txt, team and 2 or 1)
 				else
-					LocalPlayer():ConCommand((self.isTeamChat and "say_team \"" or "say \"") .. txt .. "\"")
+					LocalPlayer():ConCommand((team and "say_team \"" or "say \"") .. txt .. "\"")
 				end
 			end
 
@@ -99,12 +152,16 @@ function qchat:CreateChatTab()
 
 		if key == KEY_TAB then
 			local tab = hook.Run("OnChatTab", txt)
+			local split = txt:Split(" ")
 
-			if tab and isstring(tab) then
+			if tab and isstring(tab) and tab ~= txt then
 				pan:SetText(tab)
+			elseif qchat.shortcut[split[#split]] then
+				split[#split] = qchat.shortcut[split[#split]]
+				pan:SetText(table.concat(split, " "))
 			end
 
-			timer.Simple(0, function() pan:RequestFocus() pan:SetCaretPos((tab or txt):len()) end)
+			timer.Simple(0, function() pan:RequestFocus() pan:SetCaretPos(pan:GetText():len()) end)
 		end
 
 		if key == KEY_UP then
@@ -119,11 +176,10 @@ function qchat:CreateChatTab()
 	end
 
 	self.chatTab.pText.Paint = function(pan, w, h)
-		surface.SetDrawColor(deshou.darkGrey)
+		surface.SetDrawColor(colors.barBack)
 		surface.DrawRect(0, 0, w, h)
 
-		pan:SetFontInternal("QChatFont2")
-		pan:DrawTextEntryText(deshou.white, deshou.highGrey, deshou.highGrey)
+		pan:DrawTextEntryText(colors.text, colors.textInputColor, colors.textInputColor)
 	end
 
 	self.chatTab.pText.OnChange = function(pan)
@@ -142,9 +198,9 @@ function qchat:CreateChatTab()
 	end
 
 	self.chatTab.pGrLab = vgui.Create("DLabel", self.chatTab.pGr)
-	self.chatTab.pGrLab:SetPos(8, 2)
+	self.chatTab.pGrLab:SetPos(5, 2)
 
-	self.chatTab.pGrLab:SetTextColor(deshou.pink)
+	self.chatTab.pGrLab:SetTextColor(colors.highlightOne)
 	self.chatTab.pGrLab:SetFont("QChatFont2")
 
 	-- The element to actually display the chat its-self.
@@ -246,7 +302,7 @@ function qchat:SetUpChat()
 		self.pPanel:MakePopup()
 	end
 
-	self.chatTab.pGrLab:SetTextColor(deshou.pink)
+	self.chatTab.pGrLab:SetTextColor(colors.highlightOne)
 	self.chatTab.pGrLab:SetText(qchat.isTeamChat and "(TEAM)" or "(GLOBAL)")
 	self.chatTab.pText:SetText("")
 
@@ -285,11 +341,11 @@ local function AppendTextLink(a, callback)
 
 	if #result == 0 then return false end
 
-	table.sort(result, function(a,b) return a[1] < b[1] end)
+	table.sort(result, function(a, b) return a[1] < b[1] end)
 
 	-- Fix overlaps
 	local _l, _r
-	for k, tbl in pairs(result) do
+	for k, tbl in ipairs(result) do
 		local l, r = tbl[1], tbl[2]
 
 		if not _l then
@@ -305,10 +361,10 @@ local function AppendTextLink(a, callback)
 	local function TEX(str) callback(false, str) end
 	local function LNK(str) callback(true, str) end
 
-	local offset=1
+	local offset = 1
 	local right
 
-	for _, tbl in pairs(result) do
+	for _, tbl in ipairs(result) do
 		local l, r = tbl[1], tbl[2]
 		local link = a:sub(l, r)
 		local left = a:sub(offset, l - 1)
@@ -342,13 +398,14 @@ function qchat:AppendText(txt)
 	end
 end
 
+ParseChatHudTags = ParseChatHudTags or function(a) return a end
 function qchat:ParseChatLine(tbl)
 	self:BuildIfNotExist()
 
 	if isstring(tbl) then
 		self.chatTab.pFeed:InsertColorChange(120, 240, 140, 255)
 
-		self.chatTab.pFeed:AppendText(tbl)
+		self.chatTab.pFeed:AppendText(ParseChatHudTags(tbl))
 		self.chatTab.pFeed:AppendText("\n")
 	return end
 
@@ -359,9 +416,9 @@ function qchat:ParseChatLine(tbl)
 			local col = GAMEMODE:GetTeamColor(v)
 			self.chatTab.pFeed:InsertColorChange(col.r, col.g, col.b, 255)
 
-			self.chatTab.pFeed:AppendText(v:Nick())
+			self.chatTab.pFeed:AppendText(ParseChatHudTags(v:Nick()))
 		elseif v ~= nil then
-			self:AppendText(tostring(v))
+			self:AppendText(ParseChatHudTags(tostring(v)))
 		end
 	end
 
@@ -403,16 +460,15 @@ function qchat:Close()
 	self:SaveCookies()
 end
 
-function qchat.RelayNotifications(index, name, text, type)
-	qchat:ParseChatLine(text)
-end
-hook.Add("ChatText", "qchat.RelayNotifications", qchat.RelayNotifications)
+if not chathud then
 
 _G.oldAddText = _G.oldAddText or _G.chat.AddText
 function chat.AddText(...)
 	qchat:ParseChatLine({...})
 
 	_G.oldAddText(...)
+end
+
 end
 
 _G.oldGetChatBoxPos = _G.oldGetChatBoxPos or _G.chat.GetChatBoxPos

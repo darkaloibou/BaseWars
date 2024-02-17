@@ -32,6 +32,7 @@ function MODULE:HandleNetMessage(len, ply)
 end
 net.Receive(tag, Curry(MODULE.HandleNetMessage))
 
+local verbose = CreateConVar("basewars_notif_verbose", "0", FCVAR_ARCHIVE, "Spam the ever living shit out of the server console and EPOE with worthless notifications")
 function MODULE:Notification(ply, text, col)
 
 	if SERVER then
@@ -42,7 +43,9 @@ function MODULE:Notification(ply, text, col)
 			net.WriteColor(col)
 		if ply then net.Send(ply) else net.Broadcast() end
 		
-		BaseWars.UTIL.Log(ply, " -> ", text)
+		if verbose:GetBool() then
+			BaseWars.UTIL.Log(ply, " -> ", text)
+		end
 		
 		return
 		
@@ -201,9 +204,10 @@ function MODULE:UnStuck(ply, ang, scale)
 		
 	else
 	
-		
-		local HitString = math.floor(NewPos.x) .. "," .. math.floor(NewPos.y) .. "," .. math.floor(NewPos.z)
-		BaseWars.UTIL.Log("USTK EVENT: ", ply, " -> [", HitString, "]")
+		if verbose:GetBool() then
+			local HitString = math.floor(NewPos.x) .. "," .. math.floor(NewPos.y) .. "," .. math.floor(NewPos.z)
+			BaseWars.UTIL.Log("USTK EVENT: ", ply, " -> [", HitString, "]")
+		end
 	
 		ply:SetPos(NewPos)
 		return true
@@ -211,4 +215,4 @@ function MODULE:UnStuck(ply, ang, scale)
 	end
 		
 end
-PLAYER.UnStuck = Curry(MODULE.UnStuck)
+PLAYER.BW_UnStuck = Curry(MODULE.UnStuck)

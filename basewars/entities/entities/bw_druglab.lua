@@ -45,6 +45,7 @@ function ENT:StartCooking( drug )
 end
  
 function ENT:SpawnDrug( drug )
+		local Owner = BaseWars.Ents:ValidOwner(self)
     local Ent = ents.Create("bw_drink_drug")
         Ent:SetDrugEffect(drug)
         Ent.Random = false
@@ -52,6 +53,7 @@ function ENT:SpawnDrug( drug )
         Ent:SetAngles(self:GetAngles())
     Ent:Spawn()
     Ent:Activate()
+		if IsValid(Owner) then Ent:CPPISetOwner(Owner) end
 end
  
 function ENT:ThinkFunc()
@@ -78,7 +80,7 @@ function ENT:UseFunc(ply)
 	local Owner = BaseWars.Ents:ValidOwner(self)
     if not BaseWars.Ents:Valid( self ) then return end
     if not BaseWars.Ents:ValidPlayer(Owner) or not BaseWars.Ents:ValidPlayer(ply) then return end
-    if Owner ~= ply then return end
+    if Owner ~= ply and (not Owner:InFaction() or Owner:GetFaction() ~= ply:GetFaction()) then return end
  
     if self.UsedTime + 1 > self.UsedTime then
        

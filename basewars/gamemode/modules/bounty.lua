@@ -27,14 +27,29 @@ if SERVER then
 	function MODULE:PlaceBounty(ply, who, amt)
 
 		if not IsValid(ply) or not IsValid(who) then return false, BaseWars.LANG.InvalidPlayer end
+		if who:EntIndex() == ply:EntIndex() then return false, BaseWars.LANG.BountyOnSelf end
 		if who:GetMoney() < amt then return false, BaseWars.LANG.BountyNotEnoughMoney end
+		if amt < 1 then return false, BaseWars.LANG.InvalidAmount end
+		if who:InFaction() and ply:InFaction() and who:Team() == ply:Team() then return false, BaseWars.LANG.BountyInFaction end
+		--if who.IsFriends and who:IsFriends(ply) then return false, BaseWars.LANG.BountyIsFriend end
 
 		local tbl = self:GetBountyTbl()
 
 		who:TakeMoney( amt )
-		tbl[ply:SteamID()] = amt
-
-		PrintMessage(3, "Bounty of " .. BaseWars.LANG.CURRENCY .. BaseWars.NumberFormat(amt) .. " has been placed on " .. ply:Name())
+		
+		local added = false
+		if tbl[ply:SteamID()] then 
+			added = true
+			tbl[ply:SteamID()] = tbl[ply:SteamID()] + amt 
+		else
+			tbl[ply:SteamID()] = amt
+		end
+	
+		if added then
+			PrintMessage(3, "Bounty on player " .. ply:Name() .. " has increased to " .. BaseWars.NumberFormat(tbl[ply:SteamID()]) )
+		else
+			PrintMessage(3, "Bounty of " .. BaseWars.LANG.CURRENCY .. BaseWars.NumberFormat(amt) .. " has been placed on " .. ply:Name())
+		end
 		BaseWars.UTIL.Log("Players " .. ply:Name() .. " bounty was set to " .. BaseWars.LANG.CURRENCY .. BaseWars.NumberFormat(amt) .. ".")
 
 	end
@@ -63,7 +78,7 @@ if SERVER then
 
 		if not amt then return end
 
-		attacker:GiveMoney( amt )
+		attacker:GiveMoney( math.min(attacker:GetMoney() * BaseWars.Config.BountyDelimiter, amt) )
 		tbl[victim:SteamID()] = nil
 
 		PrintMessage(3, "Bounty on " .. victim:Name() .. " has been claimed by " .. attacker:Name() .. ".")
@@ -83,3 +98,4 @@ function MODULE:GetBounty(ply)
 
 end
 PLAYER.GetBounty = Curry(MODULE.GetBounty)
+

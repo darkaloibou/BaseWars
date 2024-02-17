@@ -1,8 +1,7 @@
 MODULE.Name 	= "PlayerLevel"
-MODULE.Author 	= "Trixter"
+MODULE.Author 	= "Q2F2 and Trixter"
 
 local tag = "BaseWars.PlayerLevel"
-local tag_escaped = "basewars_playerlevel"
 local PLAYER = debug.getregistry().Player
 
 local function isPlayer(ply)
@@ -13,34 +12,14 @@ end
 
 function MODULE:GetLevel(ply)
 
-	if SERVER then
-	
-		local dirName = self:Init(ply)
-		local level = ply.level or tonumber(file.Read(tag_escaped .. "/" .. dirName .. "/level.txt", "DATA"))
-		return tonumber(level)
-		
-	elseif CLIENT then
-	
-		return tonumber(ply:GetNWString(tag .. ".Level")) or 0
-		
-	end
+	return tonumber(ply:GetNWString(tag .. ".Level")) or 0
 	
 end
 PLAYER.GetLevel = Curry(MODULE.GetLevel)
 
 function MODULE:GetXP(ply)
-	
-	if SERVER then
-	
-		local dirName = self:Init(ply)
-		local xp = ply.xp or tonumber(file.Read(tag_escaped .. "/" .. dirName .. "/xp.txt", "DATA"))
-		return tonumber(xp)
-		
-	elseif CLIENT then
-	
-		return tonumber(ply:GetNWString(tag .. ".XP")) or 0
-		
-	end
+
+	return tonumber(ply:GetNWString(tag .. ".XP")) or 0
 	
 end
 PLAYER.GetXP = Curry(MODULE.GetXP)
@@ -61,13 +40,8 @@ if SERVER then
 
 	function MODULE:Init(ply)
 	
-		local dirName = isPlayer(ply) and ply:SteamID64() or (isstring(ply) and ply or nil)
-		
-		if not file.IsDir(tag_escaped .. "/" .. dirName, "DATA") then file.CreateDir(tag_escaped .. "/" .. dirName) end
-		if not file.Exists(tag_escaped .. "/" .. dirName .. "/level.txt", "DATA") then file.Write(tag_escaped .. "/" .. dirName .. "/level.txt", 1) end
-		if not file.Exists(tag_escaped .. "/" .. dirName .. "/xp.txt", "DATA") then file.Write(tag_escaped .. "/" .. dirName .. "/xp.txt", 0) end
-		
-		return dirName
+		BaseWars.MySQL.InitPlayer(ply, "xp", "0")
+		BaseWars.MySQL.InitPlayer(ply, "level", "1")
 		
 	end
 	PLAYER.InitLevel = Curry(MODULE.Init)
@@ -79,24 +53,33 @@ if SERVER then
 	end
 
 	function MODULE:Save(ply)
-	
-		local dirName = self:Init(ply)
-		file.Write(tag_escaped .. "/" .. dirName .. "/level.txt", self:GetLevel(ply))
-		file.Write(tag_escaped .. "/" .. dirName .. "/xp.txt", self:GetXP(ply))
+		
+		BaseWars.MySQL.SaveVar(ply, "level", amount or self:GetLevel(ply))
+		BaseWars.MySQL.SaveVar(ply, "xp", amount or self:GetXP(ply))
 		
 	end
 	PLAYER.SaveLevels = Curry(MODULE.Save)
 	
 	function MODULE:Load(ply)
-	
-		self:Init(ply)
-		local lvl = tostring(self:GetLevel(ply))
-		local xp = tostring(self:GetXP(ply))
-		ply:SetNWString(tag .. ".Level", lvl)
-		ply:SetNWString(tag .. ".XP", xp)
-		ply.level = lvl
-		ply.xp = xp
 		
+		self:Init(ply)
+		
+		BaseWars.MySQL.LoadVar(ply, "level", function(ply, var, val)
+			if not IsValid(ply) then return end
+			
+			local val = tostring(val)
+			ply:SetNWString(tag .. ".Level", val)
+			ply.level = val
+		end)
+	
+		BaseWars.MySQL.LoadVar(ply, "xp", function(ply, var, val)
+			if not IsValid(ply) then return end
+			
+			local val = tostring(val)
+			ply:SetNWString(tag .. ".XP", val)
+			ply.xp = val
+		end)
+	
 	end
 	PLAYER.LoadLevels = Curry(MODULE.Load)
 
@@ -105,8 +88,8 @@ if SERVER then
 		local neededxp = ply:GetXPNextLevel()
 		if ply:GetXP() >= neededxp then
 
-			if ply:GetLevel() == 5000 then
-				ply:SetLevel( 5000 )
+			if ply:GetLevel() == BaseWars.Config.LevelSettings.MaxLevel then
+				ply:SetLevel( BaseWars.Config.LevelSettings.MaxLevel )
 				ply:SetXP( 0 )
 				return
 			end
@@ -121,7 +104,7 @@ if SERVER then
 	function MODULE:Set(ply, amount)
 
 		if not isnumber(amount) or amount < 0 then amount = 0 end
-		if amount > 5000 then amount = 5000 end
+		if amount > BaseWars.Config.LevelSettings.MaxLevel then amount = BaseWars.Config.LevelSettings.MaxLevel end
 		
 		amount = math.Round(amount)
 		
@@ -167,7 +150,7 @@ if SERVER then
 	end
 	PLAYER.AddXP = Curry(MODULE.AddXP)
 	
-	hook.Add("PlayerAuthed", tag .. ".Load", Curry(MODULE.Load))
+	hook.Add("LoadData", tag .. ".Load", Curry(MODULE.Load))
 	hook.Add("PlayerDisconnected", tag .. ".Save", Curry(MODULE.Save))
 	
 end

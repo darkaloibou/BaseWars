@@ -308,6 +308,8 @@ function MODULE:RemoveDrug(ply, effect)
 	end
 
 	ply:EmitSound("player/spy_uncloak.wav")
+	
+	hook.Run("PlayerRemoveDrug", ply, effect)
 
 	return true
 
@@ -404,6 +406,8 @@ function MODULE:ApplyDrug(ply, effect, dur, ...)
 	BaseWars.UTIL.TimerAdv(TID, 0.3, dur / 0.3, Tick, Done)
 
 	ply:EmitSound("player/spy_cloak.wav")
+	
+	hook.Run("PlayerApplyDrug", ply, effect)
 
 	return true
 

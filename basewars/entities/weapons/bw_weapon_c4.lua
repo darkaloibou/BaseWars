@@ -1,14 +1,18 @@
 AddCSLuaFile()
 
-SWEP.PrintName				= "C4"
+SWEP.PrintName 				= "C4"
+SWEP.Author 				= "Ghosty & Q2F2"
+SWEP.Instructions 			= "Blow things up"
+SWEP.Purpose 				= "Explodes"
 
 SWEP.Slot					= 5
 SWEP.SlotPos				= 3
 
 SWEP.Spawnable				= true
+SWEP.Category 				= "BaseWars"
 
-SWEP.ViewModel				= Model("models/weapons/v_c4.mdl")
-SWEP.WorldModel				= Model("models/weapons/w_c4.mdl")
+SWEP.ViewModel				= Model("models/weapons/tfa_cso2/c_c4.mdl")
+SWEP.WorldModel				= Model("models/weapons/tfa_cso2/w_c4.mdl")
 SWEP.ViewModelFOV			= 54
 SWEP.UseHands				= true
 
@@ -46,7 +50,7 @@ function SWEP:PrimaryAttack()
 	if not ent:IsPlayer() and not ent:IsNPC() then
 		
 		local p = ent
-		local ent = ents.Create("bw_c4")
+		local ent = ents.Create("bw_explosive_c4")
 
 		local pos = tr.HitPos + tr.HitNormal * 2
 		local ang = tr.HitNormal:Angle()
@@ -59,7 +63,7 @@ function SWEP:PrimaryAttack()
 		ent:Spawn()
 		ent:Activate()
 		ent.Owner = self.Owner
-		ent:Plant(not p:IsWorld() and p)
+		ent:Plant(not p:IsWorld() and p or NULL )
 
 		self:Remove()
 
@@ -78,7 +82,7 @@ function SWEP:SecondaryAttack()
 	if not ply:IsAdmin() then return end
 	
 	local p = ent
-	local ent = ents.Create("bw_c4")
+	local ent = ents.Create("bw_explosive_c4")
 
 	ent:SetPos(ply:GetShootPos() + ply:GetAimVector() * 16)
 	ent:SetAngles(ply:GetAimVector():Angle())

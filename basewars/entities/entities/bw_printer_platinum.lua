@@ -1,12 +1,12 @@
 AddCSLuaFile()
 ENT.Base = "bw_base_moneyprinter"
 
-ENT.Model = "models/props_lab/reciever01a.mdl"
+ENT.Model = "models/livaco/advprinters2/livaco_printer.mdl"
 ENT.Skin = 0
 
 ENT.Capacity 		= 180000
 ENT.PrintInterval 	= 1
-ENT.PrintAmount		= 24
+ENT.PrintAmount		= 38
 
 ENT.PrintName = "Platinum Printer"
 

@@ -1,9 +1,7 @@
 MODULE.Name 	= "Money"
 MODULE.Author 	= "Q2F2, Ghosty and Tenrys"
-MODULE.Credits 	= "Based on sh_money by Tenrys; https://github.com/Tenrys/tenrys-scripts/blob/master/lua/autorun/sh_money.lua"
 
 local tag = "BaseWars.Money"
-local tag_escaped = "basewars_money"
 local PLAYER = debug.getregistry().Player
 
 local function isPlayer(ply)
@@ -14,17 +12,7 @@ end
 
 function MODULE:GetMoney(ply)
 
-	if SERVER then
-	
-		local dirName = self:InitMoney(ply)
-		local money = tonumber(file.Read(tag_escaped .. "/" .. dirName .. "/money.txt", "DATA"))
-		return money
-		
-	elseif CLIENT then
-	
-		return tonumber(ply:GetNWString(tag)) or 0
-		
-	end
+	return tonumber(ply:GetNWString(tag)) or 0
 	
 end
 PLAYER.GetMoney = Curry(MODULE.GetMoney)
@@ -33,13 +21,7 @@ if SERVER then
 
 	function MODULE:InitMoney(ply)
 	
-		local dirName = isPlayer(ply) and ply:SteamID64() or (isstring(ply) and ply or nil)
-		
-		if not file.IsDir(tag_escaped .. "/" .. dirName, "DATA") then file.CreateDir(tag_escaped .. "/" .. dirName) end
-		if not file.Exists(tag_escaped .. "/" .. dirName .. "/money.txt", "DATA") then file.Write(tag_escaped .. "/" .. dirName .. "/money.txt", tostring(BaseWars.Config.StartMoney)) end
-		file.Write(tag_escaped .. "/" .. dirName .. "/player.txt", ply:Name())
-			
-		return dirName
+		BaseWars.MySQL.InitPlayer(ply, "money", tostring(BaseWars.Config.StartMoney))
 		
 	end
 	PLAYER.InitMoney = Curry(MODULE.InitMoney)
@@ -52,25 +34,28 @@ if SERVER then
 
 	function MODULE:SaveMoney(ply, amount)
 	
-		local dirName = self:InitMoney(ply)
-		file.Write(tag_escaped .. "/" .. dirName .. "/money.txt", amount or self:GetMoney(ply))
-		
+		BaseWars.MySQL.SaveVar(ply, "money", amount or self:GetMoney(ply))
+
 	end
 	PLAYER.SaveMoney = Curry(MODULE.SaveMoney)
 	
 	function MODULE:LoadMoney(ply)
-	
-		self:InitMoney(ply)
-		ply:SetNWString(tag, tostring(self:GetMoney(ply)))
 		
+		self:InitMoney(ply)
+		
+		BaseWars.MySQL.LoadVar(ply, "money", function(ply, var, val)
+			if not IsValid(ply) then return end
+			
+			ply:SetNWString(tag, tostring(val))
+		end)
+	
 	end
 	PLAYER.LoadMoney = Curry(MODULE.LoadMoney)
 
 	function MODULE:SetMoney(ply, amount)
-	
-		if not isnumber(amount) or amount < 0 then amount = 0 end
-		if amount > 2^63 then amount = 2^63 end
+		local amount = tonumber(amount)
 		
+		if not isnumber(amount) or amount < 0 then amount = 0 end
 		if amount ~= amount then amount = 0 end
 		
 		amount = math.Round(amount)
@@ -103,7 +88,7 @@ if SERVER then
 	end
 	PLAYER.TransferMoney = Curry(MODULE.TransferMoney)
 
-	hook.Add("PlayerAuthed", tag .. ".Load", Curry(MODULE.LoadMoney))
+	hook.Add("LoadData", tag .. ".Load", Curry(MODULE.LoadMoney))
 	hook.Add("PlayerDisconnected", tag .. ".Save", Curry(MODULE.SaveMoney))
 	
 end
