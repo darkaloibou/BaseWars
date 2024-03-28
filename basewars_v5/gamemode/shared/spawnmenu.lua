@@ -60,8 +60,9 @@ if SERVER then
 		i = i[item]
 		if not i then return end
 
-		local model, price, ent, sf, lim = i.Model, i.Price, i.ClassName, i.UseSpawnFunc, i.Limit, i.Props
+		local model, price, ent, sf, lim = i.Model, i.Price, i.ClassName, i.UseSpawnFunc, i.Limit
 		local gun, drug, ammo, ignore_raid, always_raid, force_model, health = i.Gun, i.Drug, i.Ammo, i.IgnoreRaid, i.AlwaysRaidable, i.ForceModel, i.Health
+
 		local vip = i.VIP
 		local HasVIP = not vip or (table.HasValue(BaseWars.Config.VIPRanks, ply:GetUserGroup()) or ply:IsAdmin())
 
@@ -147,11 +148,6 @@ if SERVER then
 
 			hook.Run("BaseWars_PlayerBuyGun", ply, Ent) -- Player, Gun entity
 		return end
-
-		if prop_physics then
-  			RunConsoleCommand("gm_spawn", v.Model)
- 		 	return
-		end 
 
 		if drug then
 			local Rand = (ent == "Random")
