@@ -1,0 +1,19 @@
+AddCSLuaFile()
+ENT.Base = "bw_base_moneyprinter"
+
+ENT.Model = "models/livaco/advprinters2/livaco_printer.mdl"
+ENT.Skin = 0
+
+ENT.Capacity            = 4173672062*300
+ENT.PrintInterval       = 1
+ENT.PrintAmount         = 4173672062
+ENT.XPAmount            = 159730
+
+ENT.PrintName = "Seashell Printer"
+
+ENT.FontColor = Color(255, 245, 238) 
+ENT.BackColor = color_white
+
+ENT.IsValidRaidable = true
+
+ENT.PresetMaxHealth = 8500
